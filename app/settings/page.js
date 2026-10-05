@@ -1,4 +1,6 @@
-import DashboardLayout from "../components/DashboardLayout";
+"use client";
+
+import DashboardLayout from "@/components/DashboardLayout";
 
 export default function SettingsPage() {
   return (

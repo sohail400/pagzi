@@ -1,12 +1,14 @@
-import { Link } from "react-router";
+"use client";
 
-export default function SignupPage() {
+import Link from "next/link";
+
+export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#f8f7f3] font-sans text-stone-900">
       <div className="navbar mx-auto max-w-6xl px-5 py-5 sm:px-8">
         <div className="navbar-start">
           <Link
-            to="/"
+            href="/"
             className="link flex items-center gap-2 text-lg font-bold tracking-tight no-underline"
             aria-label="indie.site home"
           >
@@ -15,40 +17,28 @@ export default function SignupPage() {
           </Link>
         </div>
         <div className="navbar-end gap-2 text-sm text-stone-500">
-          <span className="hidden sm:inline">Already have an account?</span>
+          <span className="hidden sm:inline">New to indie.site?</span>
           <Link
-            to="/login"
+            href="/signup"
             className="btn btn-sm rounded-full border-stone-300 bg-white px-5 font-semibold text-stone-800 shadow-none hover:border-stone-400 hover:bg-stone-50"
           >
-            Sign in
+            Create account
           </Link>
         </div>
       </div>
 
-      <main className="flex px-5 pb-16 pt-10 sm:px-8 sm:pb-24 sm:pt-16">
+      <main className="flex px-5 pb-16 pt-12 sm:px-8 sm:pb-24 sm:pt-20">
         <div className="mx-auto w-full max-w-md">
           <div className="mb-8 text-center">
-            <p className="text-3xl font-bold tracking-[-0.035em] text-stone-900 sm:text-4xl">Create your indie.site</p>
+            <p className="text-3xl font-bold tracking-[-0.035em] text-stone-900 sm:text-4xl">Welcome back</p>
             <p className="mt-3 text-sm leading-6 text-stone-600 sm:text-base">
-              One simple page for who you are and everything you’re building.
+              Sign in to manage your profile and the projects you’re building.
             </p>
           </div>
 
           <div className="card rounded-[2rem] border border-stone-200 bg-white shadow-[0_16px_50px_rgba(28,25,23,0.07)]">
             <div className="card-body gap-0 p-6 sm:p-8">
               <form className="space-y-5" onSubmit={(event) => event.preventDefault()}>
-                <fieldset className="fieldset p-0">
-                  <legend className="fieldset-legend pb-2 text-sm font-semibold text-stone-700">Your name</legend>
-                  <input
-                    type="text"
-                    name="name"
-                    autoComplete="name"
-                    required
-                    placeholder="Sohail Shaikh"
-                    className="input h-12 w-full rounded-xl border-stone-300 bg-white px-4 text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-700 focus:outline-none"
-                  />
-                </fieldset>
-
                 <fieldset className="fieldset p-0">
                   <legend className="fieldset-legend pb-2 text-sm font-semibold text-stone-700">Email address</legend>
                   <input
@@ -62,49 +52,46 @@ export default function SignupPage() {
                 </fieldset>
 
                 <fieldset className="fieldset p-0">
-                  <legend className="fieldset-legend pb-2 text-sm font-semibold text-stone-700">Password</legend>
+                  <div className="flex items-center justify-between pb-2">
+                    <legend className="fieldset-legend p-0 text-sm font-semibold text-stone-700">Password</legend>
+                    <a
+                      href="mailto:hello@indie.site?subject=Password reset"
+                      className="link text-xs font-semibold text-stone-500 hover:text-stone-900"
+                    >
+                      Forgot password?
+                    </a>
+                  </div>
                   <input
                     type="password"
                     name="password"
-                    autoComplete="new-password"
+                    autoComplete="current-password"
                     required
-                    minLength={8}
-                    placeholder="At least 8 characters"
+                    placeholder="Enter your password"
                     className="input h-12 w-full rounded-xl border-stone-300 bg-white px-4 text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-700 focus:outline-none"
                   />
-                  <p className="fieldset-label pt-2 text-xs text-stone-400">Use 8 or more characters.</p>
                 </fieldset>
 
-                <label className="flex cursor-pointer items-start gap-3 text-sm leading-5 text-stone-600">
-                  <input
-                    type="checkbox"
-                    name="terms"
-                    required
-                    className="checkbox checkbox-sm mt-0.5 rounded border-stone-300"
-                  />
-                  <span>I agree to the terms and privacy policy.</span>
+                <label className="flex cursor-pointer items-center gap-3 text-sm text-stone-600">
+                  <input type="checkbox" name="remember" className="checkbox checkbox-sm rounded border-stone-300" />
+                  Keep me signed in
                 </label>
 
                 <button
                   type="submit"
                   className="btn h-12 w-full rounded-full border-stone-900 bg-stone-900 font-semibold text-white shadow-none hover:border-stone-800 hover:bg-stone-800"
                 >
-                  Create account
+                  Sign in
                 </button>
               </form>
 
               <p className="mt-6 text-center text-sm text-stone-500">
-                Already have an account?{" "}
-                <Link to="/login" className="link font-semibold text-stone-900">
-                  Sign in
+                Don’t have an account?{" "}
+                <Link href="/signup" className="link font-semibold text-stone-900">
+                  Create your page
                 </Link>
               </p>
             </div>
           </div>
-
-          <p className="mx-auto mt-5 max-w-sm text-center text-xs leading-5 text-stone-400">
-            Start with your profile, then add the websites and projects you want people to discover.
-          </p>
         </div>
       </main>
     </div>

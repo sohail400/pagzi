@@ -1,6 +1,6 @@
-import productPreview from "../assets/indie-site-preview.png";
+import Link from "next/link";
 
-export default function App() {
+export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#f8f7f3] font-sans text-stone-900">
       <div className="navbar mx-auto max-w-6xl px-5 py-5 sm:px-8">
@@ -17,18 +17,18 @@ export default function App() {
           </a>
         </div>
         <div className="navbar-end gap-2">
-          <a
+          <Link
             href="/login"
             className="btn btn-ghost btn-sm hidden rounded-full px-4 font-semibold text-stone-600 hover:bg-stone-200/60 sm:inline-flex"
           >
             Sign in
-          </a>
-          <a
+          </Link>
+          <Link
             href="/signup"
             className="btn btn-sm rounded-full border-stone-300 bg-white px-5 font-semibold text-stone-800 shadow-none hover:border-stone-400 hover:bg-stone-50"
           >
             Create your page
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -41,25 +41,25 @@ export default function App() {
             Show who you are, what you’re building, and the websites behind your journey — all from one simple page.
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <a
+            <Link
               href="/signup"
               className="btn h-12 w-full rounded-full border-stone-900 bg-stone-900 px-7 font-semibold text-white shadow-sm hover:border-stone-800 hover:bg-stone-800 sm:w-auto"
             >
               Create your page
-            </a>
-            <a
+            </Link>
+            <Link
               href="/sohail"
               className="btn btn-ghost h-12 w-full rounded-full px-7 font-semibold text-stone-600 hover:bg-stone-200/60 sm:w-auto"
             >
               See an example
-            </a>
+            </Link>
           </div>
         </div>
 
         <div id="preview" className="scroll-mt-8 px-4 sm:px-8">
           <div className="mx-auto flex max-w-6xl justify-center rounded-[2rem] border border-stone-200 bg-[#eeece6] px-5 py-12 shadow-[0_20px_70px_rgba(28,25,23,0.06)] sm:py-20 lg:py-24">
             <img
-              src={productPreview}
+              src="/indie-site-preview.png"
               alt="Mobile indie.site profile showing Sohail Shaikh's bio, social links, and website performance cards"
               className="w-full max-w-[346px] rounded-[1.75rem] shadow-[0_24px_65px_rgba(28,25,23,0.18)]"
             />
@@ -89,12 +89,12 @@ export default function App() {
                   Everything you need to create and keep your indie.site page.
                 </p>
                 <div className="card-actions mt-5">
-                  <a
+                  <Link
                     href="/signup"
                     className="btn h-12 w-full rounded-full border-stone-900 bg-stone-900 font-semibold text-white shadow-none hover:border-stone-800 hover:bg-stone-800"
                   >
                     Get indie.site
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>

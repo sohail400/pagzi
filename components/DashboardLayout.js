@@ -1,23 +1,17 @@
-import type { ReactNode } from "react";
-import { Link } from "react-router";
-
-type DashboardLayoutProps = {
-  active: "profile" | "settings";
-  children: ReactNode;
-};
+import Link from "next/link";
 
 const navigation = [
-  { label: "Profile", to: "/admin", key: "profile" },
-  { label: "Sites", to: "", key: "sites", disabled: true },
-  { label: "Settings", to: "/settings", key: "settings" },
+  { label: "Profile", href: "/admin", key: "profile" },
+  { label: "Sites", href: "", key: "sites", disabled: true },
+  { label: "Settings", href: "/settings", key: "settings" },
 ];
 
-export default function DashboardLayout({ active, children }: DashboardLayoutProps) {
+export default function DashboardLayout({ active, children }) {
   return (
     <div className="min-h-screen bg-[#f8f7f3] font-sans text-stone-900">
       <div className="mx-auto flex min-h-screen max-w-[1440px]">
         <aside className="hidden w-64 shrink-0 flex-col border-r border-stone-200 bg-white/60 px-5 py-6 lg:flex">
-          <Link to="/" className="link flex items-center gap-2 px-2 text-lg font-bold tracking-tight no-underline">
+          <Link href="/" className="link flex items-center gap-2 px-2 text-lg font-bold tracking-tight no-underline">
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-stone-900 text-sm text-white">i</span>
             indie.site
           </Link>
@@ -34,7 +28,7 @@ export default function DashboardLayout({ active, children }: DashboardLayoutPro
                     </span>
                   ) : (
                     <Link
-                      to={item.to}
+                      href={item.href}
                       className={`rounded-xl px-3 py-2.5 font-medium ${
                         active === item.key
                           ? "bg-stone-900 text-white hover:bg-stone-900"
@@ -62,7 +56,7 @@ export default function DashboardLayout({ active, children }: DashboardLayoutPro
               </div>
             </div>
             <Link
-              to="/login"
+              href="/login"
               className="btn btn-ghost btn-sm w-full justify-start rounded-xl px-3 font-medium text-stone-500 hover:bg-stone-100 hover:text-stone-900"
             >
               Logout
@@ -73,13 +67,13 @@ export default function DashboardLayout({ active, children }: DashboardLayoutPro
         <div className="min-w-0 flex-1">
           <div className="border-b border-stone-200 bg-white/70 px-4 py-4 lg:hidden">
             <div className="flex items-center justify-between">
-              <Link to="/" className="link flex items-center gap-2 text-lg font-bold no-underline">
+              <Link href="/" className="link flex items-center gap-2 text-lg font-bold no-underline">
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-stone-900 text-sm text-white">
                   i
                 </span>
                 indie.site
               </Link>
-              <Link to="/login" className="btn btn-ghost btn-sm rounded-full text-stone-500">
+              <Link href="/login" className="btn btn-ghost btn-sm rounded-full text-stone-500">
                 Logout
               </Link>
             </div>
@@ -96,7 +90,7 @@ export default function DashboardLayout({ active, children }: DashboardLayoutPro
                 ) : (
                   <Link
                     key={item.key}
-                    to={item.to}
+                    href={item.href}
                     className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium ${
                       active === item.key ? "bg-stone-900 text-white" : "text-stone-600"
                     }`}

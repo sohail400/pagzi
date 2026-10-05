@@ -1,12 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 @import 'tailwindcss';
 @plugin "daisyui" {
   themes: false;
 }
 
 @theme inline {
-  --font-sans: 'Inter', sans-serif;
-  --font-mono: 'DM Mono', monospace;
+  --font-sans: var(--font-inter), sans-serif;
+  --font-mono: var(--font-dm-mono), monospace;
 }
 
 * {

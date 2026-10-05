@@ -1,6 +1,7 @@
-import { Link } from "react-router";
-import DashboardLayout from "../components/DashboardLayout";
-import profileImage from "../assets/profile.jpg";
+"use client";
+
+import Link from "next/link";
+import DashboardLayout from "@/components/DashboardLayout";
 
 export default function AdminPage() {
   return (
@@ -31,7 +32,7 @@ export default function AdminPage() {
                     <div className="flex flex-wrap items-center gap-4">
                       <div className="avatar">
                         <div className="w-16 rounded-full ring-2 ring-amber-200">
-                          <img src={profileImage} alt="Sohail Shaikh" className="object-cover" />
+                          <img src="/profile.jpg" alt="Sohail Shaikh" className="object-cover" />
                         </div>
                       </div>
                       <input
@@ -137,7 +138,7 @@ export default function AdminPage() {
                 <div className="card-body p-5">
                   <div className="avatar">
                     <div className="w-16 rounded-full ring-2 ring-amber-200">
-                      <img src={profileImage} alt="" className="object-cover" />
+                      <img src="/profile.jpg" alt="" className="object-cover" />
                     </div>
                   </div>
                   <p className="mt-1 text-xl font-bold tracking-tight text-stone-900">Sohail Shaikh</p>
@@ -169,7 +170,7 @@ export default function AdminPage() {
                 </div>
               </div>
               <Link
-                to="/sohail"
+                href="/sohail"
                 className="btn mt-4 h-11 w-full rounded-full border-stone-300 bg-white font-semibold text-stone-800 shadow-none hover:border-stone-400 hover:bg-stone-50"
               >
                 View my page
