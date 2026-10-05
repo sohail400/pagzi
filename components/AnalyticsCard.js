@@ -1,7 +1,18 @@
 "use client";
 
-import { useId, useState } from "react";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useEffect, useRef, useState } from "react";
+import {
+  CategoryScale,
+  Chart,
+  Filler,
+  LinearScale,
+  LineController,
+  LineElement,
+  PointElement,
+  Tooltip,
+} from "chart.js";
+
+Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip);
 
 const data = [
   { date: "Sep 1", clicks: 1240, impressions: 38400 },
@@ -30,27 +41,68 @@ const totals = {
   impressions: data.reduce((sum, point) => sum + point.impressions, 0),
 };
 
-const stats = [
-  { label: "Clicks", value: formatK(totals.clicks), key: "clicks", color: "#2563eb" },
+const series = [
+  { label: "Clicks", value: formatK(totals.clicks), key: "clicks", color: "#2563eb", fillOpacity: [0.18, 0.02] },
   {
     label: "Impressions",
     value: formatK(totals.impressions),
     key: "impressions",
     color: "#7c3aed",
+    fillOpacity: [0.14, 0.01],
+    dash: [5, 3],
   },
 ];
 
-function ChartTooltip({ active, payload, label }) {
-  if (!active || !payload?.length) return null;
+function hexToRgba(hex, alpha) {
+  const value = parseInt(hex.slice(1), 16);
+  return `rgba(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`;
+}
 
+function verticalGradient(color, [topOpacity, bottomOpacity]) {
+  return ({ chart }) => {
+    const { ctx, chartArea } = chart;
+    if (!chartArea) return "transparent";
+    const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+    gradient.addColorStop(0, hexToRgba(color, topOpacity));
+    gradient.addColorStop(1, hexToRgba(color, bottomOpacity));
+    return gradient;
+  };
+}
+
+const hoverLine = {
+  id: "hoverLine",
+  beforeDatasetsDraw(chart) {
+    const active = chart.tooltip?.getActiveElements();
+    if (!active?.length) return;
+    const { ctx, chartArea } = chart;
+    const x = active[0].element.x;
+    ctx.save();
+    ctx.strokeStyle = "rgba(0,0,0,0.08)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, chartArea.top);
+    ctx.lineTo(x, chartArea.bottom);
+    ctx.stroke();
+    ctx.restore();
+  },
+};
+
+function ChartTooltip({ tooltip }) {
   return (
-    <div className="rounded-xl border border-stone-200 bg-white px-3 py-2 shadow-lg">
-      <p className="mb-1 text-[10px] font-medium uppercase tracking-wide text-stone-400">{label}</p>
-      {payload.map((entry) => (
-        <div key={entry.dataKey} className="flex items-center gap-2 text-xs">
-          <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: entry.color }} />
-          <span className="w-20 capitalize text-stone-500">{entry.dataKey}</span>
-          <span className="font-mono font-semibold text-stone-800">{formatK(entry.value)}</span>
+    <div
+      className="pointer-events-none absolute z-10 rounded-xl border border-stone-200 bg-white px-3 py-2 shadow-lg"
+      style={{
+        left: tooltip.x,
+        top: tooltip.y,
+        transform: `translate(${tooltip.flip ? "calc(-100% - 10px)" : "10px"}, -50%)`,
+      }}
+    >
+      <p className="mb-1 text-[10px] font-medium uppercase tracking-wide text-stone-400">{tooltip.label}</p>
+      {tooltip.points.map((point) => (
+        <div key={point.key} className="flex items-center gap-2 text-xs">
+          <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: point.color }} />
+          <span className="w-20 capitalize text-stone-500">{point.key}</span>
+          <span className="font-mono font-semibold text-stone-800">{formatK(point.value)}</span>
         </div>
       ))}
     </div>
@@ -59,13 +111,112 @@ function ChartTooltip({ active, payload, label }) {
 
 export default function AnalyticsCard() {
   const [hiddenSeries, setHiddenSeries] = useState([]);
-  const chartId = useId().replaceAll(":", "");
-  const clicksFill = `clicks-${chartId}`;
-  const impressionsFill = `impressions-${chartId}`;
+  const [tooltip, setTooltip] = useState(null);
+  const canvasRef = useRef(null);
+  const chartRef = useRef(null);
+
+  useEffect(() => {
+    const monoFont = getComputedStyle(document.documentElement).getPropertyValue("--font-dm-mono") || "monospace";
+    const tickStyle = (size) => ({ color: "#a8a29e", font: { family: monoFont, size } });
+
+    const chart = new Chart(canvasRef.current, {
+      type: "line",
+      plugins: [hoverLine],
+      data: {
+        labels: data.map((point) => point.date),
+        datasets: series.map((item) => ({
+          label: item.key,
+          data: data.map((point) => point[item.key]),
+          yAxisID: item.key,
+          borderColor: item.color,
+          borderWidth: 2,
+          borderDash: item.dash ?? [],
+          backgroundColor: verticalGradient(item.color, item.fillOpacity),
+          fill: "origin",
+          cubicInterpolationMode: "monotone",
+          pointRadius: 0,
+          pointHoverRadius: 3.5,
+          pointHoverBorderWidth: 0,
+          pointHoverBackgroundColor: item.color,
+        })),
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        layout: { padding: { top: 4, right: 4 } },
+        scales: {
+          x: {
+            grid: { display: false },
+            border: { display: false },
+            ticks: {
+              ...tickStyle(9),
+              autoSkip: false,
+              maxRotation: 0,
+              callback: (_, index) => (index % 4 === 0 ? data[index].date : null),
+            },
+          },
+          clicks: {
+            position: "left",
+            beginAtZero: true,
+            grid: { color: "rgba(0,0,0,0.05)", drawTicks: false },
+            border: { display: false, dash: [3, 3] },
+            ticks: { ...tickStyle(8), maxTicksLimit: 5, padding: 6, callback: formatK },
+          },
+          impressions: {
+            position: "right",
+            beginAtZero: true,
+            grid: { color: "rgba(0,0,0,0.05)", drawTicks: false, drawOnChartArea: false },
+            border: { display: false, dash: [3, 3] },
+            ticks: { ...tickStyle(8), maxTicksLimit: 5, padding: 6, callback: formatK },
+          },
+        },
+        plugins: {
+          tooltip: {
+            enabled: false,
+            external: ({ chart, tooltip: model }) => {
+              if (model.opacity === 0) {
+                setTooltip(null);
+                return;
+              }
+              setTooltip({
+                x: model.caretX,
+                y: model.caretY,
+                flip: model.caretX > chart.width / 2,
+                label: model.title?.[0] ?? "",
+                points: model.dataPoints.map((point) => ({
+                  key: point.dataset.label,
+                  value: point.raw,
+                  color: point.dataset.borderColor,
+                })),
+              });
+            },
+          },
+        },
+      },
+    });
+
+    chartRef.current = chart;
+    return () => chart.destroy();
+  }, []);
+
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+    series.forEach((item, index) => {
+      const visible = !hiddenSeries.includes(item.key);
+      chart.setDatasetVisibility(index, visible);
+      chart.options.scales[item.key].ticks.color = visible ? "#a8a29e" : "transparent";
+    });
+    const clicksVisible = !hiddenSeries.includes("clicks");
+    chart.options.scales.clicks.grid.drawOnChartArea = clicksVisible;
+    chart.options.scales.impressions.grid.drawOnChartArea = !clicksVisible;
+    chart.update();
+  }, [hiddenSeries]);
 
   function toggleSeries(key) {
     setHiddenSeries((current) =>
-      current.includes(key) ? current.filter((series) => series !== key) : [...current, key]
+      current.includes(key) ? current.filter((item) => item !== key) : [...current, key]
     );
   }
 
@@ -82,7 +233,7 @@ export default function AnalyticsCard() {
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2">
-        {stats.map((stat) => (
+        {series.map((stat) => (
           <button
             key={stat.key}
             type="button"
@@ -98,71 +249,10 @@ export default function AnalyticsCard() {
       </div>
 
       <div className="mt-3 h-36 rounded-2xl border border-stone-200 bg-white px-2 pb-2 pt-3 sm:h-40 sm:px-3">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 4, right: 4, left: -14, bottom: 0 }}>
-            <defs>
-              <linearGradient id={clicksFill} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#2563eb" stopOpacity={0.18} />
-                <stop offset="100%" stopColor="#2563eb" stopOpacity={0.02} />
-              </linearGradient>
-              <linearGradient id={impressionsFill} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#7c3aed" stopOpacity={0.14} />
-                <stop offset="100%" stopColor="#7c3aed" stopOpacity={0.01} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false} />
-            <XAxis
-              dataKey="date"
-              axisLine={false}
-              tickLine={false}
-              interval={3}
-              tick={{ fill: "#a8a29e", fontSize: 9, fontFamily: "DM Mono, monospace" }}
-            />
-            <YAxis
-              yAxisId="clicks"
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={formatK}
-              width={31}
-              tick={{ fill: "#a8a29e", fontSize: 8, fontFamily: "DM Mono, monospace" }}
-            />
-            <YAxis
-              yAxisId="impressions"
-              orientation="right"
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={formatK}
-              width={35}
-              tick={{ fill: "#a8a29e", fontSize: 8, fontFamily: "DM Mono, monospace" }}
-            />
-            <Tooltip content={<ChartTooltip />} cursor={{ stroke: "rgba(0,0,0,0.08)" }} />
-            {!hiddenSeries.includes("clicks") && (
-              <Area
-                yAxisId="clicks"
-                type="monotone"
-                dataKey="clicks"
-                stroke="#2563eb"
-                strokeWidth={2}
-                fill={`url(#${clicksFill})`}
-                dot={false}
-                activeDot={{ r: 3.5, fill: "#2563eb", strokeWidth: 0 }}
-              />
-            )}
-            {!hiddenSeries.includes("impressions") && (
-              <Area
-                yAxisId="impressions"
-                type="monotone"
-                dataKey="impressions"
-                stroke="#7c3aed"
-                strokeWidth={2}
-                strokeDasharray="5 3"
-                fill={`url(#${impressionsFill})`}
-                dot={false}
-                activeDot={{ r: 3.5, fill: "#7c3aed", strokeWidth: 0 }}
-              />
-            )}
-          </AreaChart>
-        </ResponsiveContainer>
+        <div className="relative h-full w-full">
+          <canvas ref={canvasRef} aria-label="Clicks and impressions over time" role="img" />
+          {tooltip && <ChartTooltip tooltip={tooltip} />}
+        </div>
       </div>
     </div>
   );

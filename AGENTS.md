@@ -20,7 +20,7 @@ Originally generated with Figma Make (Vite), now migrated to **Next.js (App Rout
 - `app/settings/page.js` – Dashboard: account, billing, public page settings, delete account
 - `app/[username]/page.js` – Public profile page (`indie.site/<username>`)
 - `components/DashboardLayout.js` – Dashboard sidebar / mobile nav
-- `components/AnalyticsCard.js` – Website traffic card with clicks/impressions chart
+- `components/AnalyticsCard.js` – Website traffic card with clicks/impressions Chart.js chart
 - `public/` – Static images
 
 ## Stack
@@ -29,7 +29,8 @@ Originally generated with Figma Make (Vite), now migrated to **Next.js (App Rout
 - Tailwind CSS v4 via `@tailwindcss/postcss` (`postcss.config.mjs`); no Tailwind config file
 - daisyUI 5, loaded with `@plugin "daisyui"` in `app/globals.css`
 - Fonts: Inter and DM Mono via `next/font` in `app/layout.js`
-- Planned: Supabase (Auth, Postgres, Storage), Google Search Console API, Dodo Payments, Chart.js
+- Charts: Chart.js used directly (no React wrapper), registering only the pieces it needs
+- Planned: Supabase (Auth, Postgres, Storage), Google Search Console API, Dodo Payments
 
 ## Code rules
 
