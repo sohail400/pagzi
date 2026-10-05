@@ -38,6 +38,13 @@ Originally generated with Figma Make (Vite), now migrated to **Next.js (App Rout
 - Supabase Auth via `@supabase/ssr` (email + password). Always use `getClaims()` (never `getSession()`) to verify users on the server.
 - Planned: Supabase Postgres + Storage, Google Search Console API, Dodo Payments
 
+## UI rules (daisyUI)
+
+- Always build UI with daisyUI 5 components and classes (`btn`, `card`, `input`, `fieldset`, `badge`, `join`, `menu`, `avatar`, `toggle`, `alert`, `modal`, etc.) combined with Tailwind utilities, matching the existing Figma styling (stone palette, rounded-xl/3xl, soft shadows).
+- Check the daisyUI 5 docs before using a component: https://daisyui.com/llms.txt
+- daisyUI themes are disabled (`themes: false`), so theme colours like `badge-success`, `btn-primary` or `alert-error` have no colour. Use Tailwind colour classes instead (e.g. `border-emerald-300 text-emerald-700`).
+- daisyUI's `--border` size is only defined for form fields in `app/globals.css`; give other bordered elements explicit Tailwind border classes.
+
 ## Code rules
 
 - JavaScript (`.js`) only. Use `"use client"` only for components that need browser interactivity.
