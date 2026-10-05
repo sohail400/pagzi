@@ -3,6 +3,8 @@ import LoginForm from "./LoginForm";
 
 const NOTICES = {
   invalid_link: "That link is invalid or has expired. Please sign in, or sign up again to get a new link.",
+  confirm_failed:
+    "Your email is confirmed, but we couldn't sign you in automatically (this happens if the link was opened in a different browser). Please sign in below.",
 };
 
 export const metadata = {

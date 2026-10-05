@@ -15,11 +15,16 @@ Originally generated with Figma Make (Vite), now migrated to **Next.js (App Rout
 - `app/layout.js` – Root layout shared by every page (fonts, global CSS, default metadata)
 - `app/globals.css` – Tailwind CSS v4 + daisyUI (themes disabled) and global styles
 - `app/page.js` – Landing page `/`
-- `app/login/page.js`, `app/signup/page.js` – Auth pages
-- `app/admin/page.js` – Dashboard: profile editor with live preview
-- `app/settings/page.js` – Dashboard: account, billing, public page settings, delete account
+- `app/login/page.js` (+ `LoginForm.js`), `app/signup/page.js` – Auth pages
+- `app/auth/actions.js` – Server actions: signup, login, logout
+- `app/auth/confirm/route.js` – Email confirmation link handler (PKCE `code` or `token_hash`)
+- `app/(dashboard)/layout.js` – Verifies the user with `getClaims()` and renders `DashboardLayout`
+- `app/(dashboard)/admin/page.js` – Dashboard: profile editor with live preview
+- `app/(dashboard)/settings/page.js` – Dashboard: account, billing, public page settings, delete account
 - `app/[username]/page.js` – Public profile page (`indie.site/<username>`)
-- `components/DashboardLayout.js` – Dashboard sidebar / mobile nav
+- `components/DashboardLayout.js` – Dashboard sidebar / mobile nav (active link, user, logout)
+- `lib/supabase/server.js` – Supabase client for server code (cookie-based session)
+- `lib/supabase/proxy.js` + `proxy.js` – Refreshes the session on each request; redirects for protected/auth pages
 - `components/AnalyticsCard.js` – Website traffic card with clicks/impressions Chart.js chart
 - `public/` – Static images
 
@@ -30,7 +35,8 @@ Originally generated with Figma Make (Vite), now migrated to **Next.js (App Rout
 - daisyUI 5, loaded with `@plugin "daisyui"` in `app/globals.css`
 - Fonts: Inter and DM Mono via `next/font` in `app/layout.js`
 - Charts: Chart.js used directly (no React wrapper), registering only the pieces it needs
-- Planned: Supabase (Auth, Postgres, Storage), Google Search Console API, Dodo Payments
+- Supabase Auth via `@supabase/ssr` (email + password). Always use `getClaims()` (never `getSession()`) to verify users on the server.
+- Planned: Supabase Postgres + Storage, Google Search Console API, Dodo Payments
 
 ## Code rules
 

@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -33,11 +34,12 @@ export async function signup(previousState, formData) {
   if (password.length < 8) return { error: "Your password must be at least 8 characters.", values };
   if (formData.get("terms") !== "on") return { error: "Please accept the terms and privacy policy.", values };
 
+  const origin = (await headers()).get("origin");
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { name } },
+    options: { data: { name }, emailRedirectTo: `${origin}/auth/confirm` },
   });
 
   if (error) return { error: friendlyError(error), values };
