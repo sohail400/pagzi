@@ -85,7 +85,7 @@ function ChartTooltip({ tooltip }) {
   );
 }
 
-export default function AnalyticsCard({ name, days }) {
+export default function AnalyticsCard({ name, description, days }) {
   const [range, setRange] = useState(28);
   const [hiddenSeries, setHiddenSeries] = useState([]);
   const [tooltip, setTooltip] = useState(null);
@@ -211,13 +211,12 @@ export default function AnalyticsCard({ name, days }) {
 
   return (
     <div className="card rounded-3xl border border-stone-200 bg-[#faf7f2] p-4 shadow-[0_8px_28px_rgba(28,25,23,0.09)]">
-      <div className="flex items-center gap-2">
-        <SiteLogo name={name} />
+      <div className="flex items-start gap-2">
+        <SiteLogo name={name} className="mt-0.5 h-7 w-7 rounded-lg" />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold leading-none text-stone-800">{name}</p>
-          <p className="mt-0.5 text-[10px] text-stone-400">Search Console</p>
-        </div>
-        <div className="join shrink-0 rounded-full border border-stone-200 bg-white p-0.5" role="group" aria-label="Date range">
+          <div className="flex items-start gap-2">
+            <p className="min-w-0 flex-1 truncate text-sm font-semibold leading-none text-stone-800">{name}</p>
+            <div className="join shrink-0 rounded-full border border-stone-200 bg-white p-0.5" role="group" aria-label="Date range">
           {RANGES.map((value) => (
             <button
               key={value}
@@ -231,6 +230,9 @@ export default function AnalyticsCard({ name, days }) {
               {value}d
             </button>
           ))}
+            </div>
+          </div>
+          {description && <p className="mt-1 text-xs leading-4 text-stone-500">{description}</p>}
         </div>
       </div>
 

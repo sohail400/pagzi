@@ -20,7 +20,7 @@ Originally generated with Figma Make (Vite), now migrated to **Next.js (App Rout
 - `app/auth/confirm/route.js` – Email confirmation link handler (PKCE `code` or `token_hash`)
 - `app/(dashboard)/layout.js` – Verifies the user with `getClaims()` and renders `DashboardLayout`
 - `app/(dashboard)/admin/page.js` – Dashboard: profile editor with live preview
-- `app/(dashboard)/sites/page.js` (+ `SitesManager.js`, `actions.js`) – Dashboard: connect Google Search Console, add/remove sites
+- `app/(dashboard)/sites/page.js` (+ `SitesManager.js`, `actions.js`) – Dashboard: connect Google Search Console, add/remove sites, 6–8 word description
 - `app/(dashboard)/settings/page.js` – Dashboard: account, billing, public page settings, delete account
 - `app/api/google/connect/route.js`, `app/api/google/callback/route.js` – Google OAuth start and return (state cookie check)
 - `app/api/logo/route.js` + `lib/logo.js` – Public website icon for a site already saved in `sites` (fetched server-side, cached)

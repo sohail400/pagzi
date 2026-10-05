@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { wordCount } from "@/lib/description";
 import SiteLogo from "@/components/SiteLogo";
 import { updateSites } from "./actions";
 
@@ -24,29 +25,96 @@ function Notice({ type, children }) {
   );
 }
 
-function SiteRow({ row, isPending, pendingKey, formAction, onSubmit }) {
-  const key = `${row.added ? "remove" : "add"}:${row.property}`;
+function DescriptionForm({ row, isPending, pendingKey, formAction, onSubmit, onCancel }) {
+  const [value, setValue] = useState(row.description ?? "");
+  const words = wordCount(value);
+  const ready = words >= 6 && words <= 8;
+  const intent = row.added ? "describe" : "add";
+  const key = `${intent}:${row.property}`;
   const busy = isPending && pendingKey === key;
 
   return (
-    <li className="flex items-center gap-3 py-4">
-      <SiteLogo name={row.name} className="h-10 w-10 rounded-xl" />
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-stone-900">{row.name}</p>
-        <p className="mt-0.5 truncate text-xs text-stone-400">
-          {row.property.startsWith("sc-domain:") ? "Domain property" : "URL-prefix property"}
-          {row.added && !row.inGoogle && " · not found in your connected Google account"}
-        </p>
-      </div>
-      {row.added && <span className="badge badge-sm hidden border-emerald-200 bg-emerald-50 text-emerald-700 sm:inline-flex">On your page</span>}
-      <form action={formAction} onSubmit={() => onSubmit(key)}>
-        <input type="hidden" name="intent" value={row.added ? "remove" : "add"} />
-        <input type="hidden" name="property" value={row.property} />
-        <button type="submit" disabled={isPending} className={row.added ? OUTLINE_BUTTON : PRIMARY_BUTTON + " h-9 px-4"}>
+    <form
+      className="mt-3 sm:pl-[52px]"
+      action={formAction}
+      onSubmit={() => onSubmit(key)}
+    >
+      <input type="hidden" name="intent" value={intent} />
+      <input type="hidden" name="property" value={row.property} />
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <input
+          name="description"
+          value={value}
+          onChange={(event) => setValue(event.target.value)}
+          maxLength={120}
+          placeholder="Learn to code in weeks, not years"
+          aria-label={`Description for ${row.name}, 6 to 8 words`}
+          className="input h-10 min-w-0 flex-1 rounded-xl border-stone-300 bg-white px-3 text-sm focus:border-stone-700 focus:outline-none"
+        />
+        <button type="submit" disabled={isPending || !ready} className={PRIMARY_BUTTON + " h-10"}>
           {busy && <span className="loading loading-spinner loading-xs" />}
-          {row.added ? "Remove" : "Add"}
+          {row.added ? "Save" : "Add"}
         </button>
-      </form>
+        {onCancel && (
+          <button type="button" className={OUTLINE_BUTTON + " h-10"} onClick={onCancel}>
+            Cancel
+          </button>
+        )}
+      </div>
+      <p className={`mt-1.5 text-xs ${ready ? "text-emerald-700" : "text-stone-400"}`}>
+        {words} of 6–8 words
+      </p>
+    </form>
+  );
+}
+
+function SiteRow({ row, isPending, pendingKey, formAction, onSubmit }) {
+  const [editing, setEditing] = useState(!row.description);
+  const removeKey = `remove:${row.property}`;
+  const removing = isPending && pendingKey === removeKey;
+
+  return (
+    <li className="py-4">
+      <div className="flex items-center gap-3">
+        <SiteLogo name={row.name} className="h-10 w-10 rounded-xl" />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold text-stone-900">{row.name}</p>
+          {row.description ? (
+            <p className="mt-0.5 text-sm text-stone-500">{row.description}</p>
+          ) : (
+            <p className="mt-0.5 truncate text-xs text-stone-400">
+              {row.property.startsWith("sc-domain:") ? "Domain property" : "URL-prefix property"}
+              {row.added && !row.inGoogle && " · not found in your connected Google account"}
+            </p>
+          )}
+        </div>
+        {row.added && <span className="badge badge-sm hidden border-emerald-200 bg-emerald-50 text-emerald-700 sm:inline-flex">On your page</span>}
+        {row.added && row.description && !editing && (
+          <button type="button" className={OUTLINE_BUTTON} onClick={() => setEditing(true)}>
+            Edit
+          </button>
+        )}
+        {row.added && (
+          <form action={formAction} onSubmit={() => onSubmit(removeKey)}>
+            <input type="hidden" name="intent" value="remove" />
+            <input type="hidden" name="property" value={row.property} />
+            <button type="submit" disabled={isPending} className={OUTLINE_BUTTON}>
+              {removing && <span className="loading loading-spinner loading-xs" />}
+              Remove
+            </button>
+          </form>
+        )}
+      </div>
+      {editing && (
+        <DescriptionForm
+          row={row}
+          isPending={isPending}
+          pendingKey={pendingKey}
+          formAction={formAction}
+          onSubmit={onSubmit}
+          onCancel={row.description ? () => setEditing(false) : null}
+        />
+      )}
     </li>
   );
 }
@@ -137,14 +205,16 @@ export default function SitesManager({ connection, properties, sites, notice }) 
         <div className="card-body gap-0 p-5 sm:p-7">
           <div className="border-b border-stone-100 pb-5">
             <p className="text-lg font-bold text-stone-900">Your sites</p>
-            <p className="mt-1 text-sm text-stone-500">Choose which websites appear on your public page.</p>
+            <p className="mt-1 text-sm text-stone-500">
+              Add a 6 to 8 word line so people know what each site does.
+            </p>
           </div>
 
           {rows.length > 0 ? (
             <ul className="divide-y divide-stone-100">
               {rows.map((row) => (
                 <SiteRow
-                  key={row.property}
+                  key={`${row.property}:${row.description ?? ""}`}
                   row={row}
                   isPending={isPending}
                   pendingKey={pendingKey}

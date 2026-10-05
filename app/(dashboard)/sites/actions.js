@@ -3,12 +3,19 @@
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
 import { deleteConnection, getConnection, isAccessRevoked, listProperties, revokeToken } from "@/lib/google";
+import { descriptionError, normalizeDescription } from "@/lib/description";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { syncStaleSites } from "@/lib/traffic";
 
 const MAX_SITES = 10;
 
-async function addSite(userId, property) {
+function checkedDescription(value) {
+  const description = normalizeDescription(value);
+  const problem = descriptionError(description);
+  return problem ? { error: problem } : { description };
+}
+
+async function addSite(userId, property, description) {
   const connection = await getConnection(userId);
   if (!connection) return { error: "Connect Google Search Console first." };
 
@@ -38,8 +45,8 @@ async function addSite(userId, property) {
   const { error } = await admin
     .from("sites")
     .upsert(
-      { user_id: userId, property: match.property, name: match.name.slice(0, 100) },
-      { onConflict: "user_id,property", ignoreDuplicates: true }
+      { user_id: userId, property: match.property, name: match.name.slice(0, 100), description },
+      { onConflict: "user_id,property" }
     );
   if (error) throw error;
 
@@ -53,9 +60,24 @@ export async function updateSites(prevState, formData) {
   const property = String(formData.get("property") ?? "");
 
   try {
-    if (intent === "add") {
-      const result = await addSite(userId, property);
-      if (result.error) return result;
+    if (intent === "add" || intent === "describe") {
+      const checked = checkedDescription(formData.get("description"));
+      if (checked.error) return checked;
+      if (intent === "add") {
+        const result = await addSite(userId, property, checked.description);
+        if (result.error) return result;
+      } else {
+        const admin = createAdminClient();
+        const { data: site, error } = await admin
+          .from("sites")
+          .update({ description: checked.description })
+          .eq("user_id", userId)
+          .eq("property", property)
+          .select("id")
+          .maybeSingle();
+        if (error) throw error;
+        if (!site) return { error: "That site isn’t on your page." };
+      }
     } else if (intent === "remove") {
       const { error } = await supabase.from("sites").delete().eq("user_id", userId).eq("property", property);
       if (error) throw error;

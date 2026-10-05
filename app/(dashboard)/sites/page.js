@@ -50,7 +50,7 @@ export default async function SitesPage({ searchParams }) {
 
   const [{ connection, properties, loadError }, { data: sites, error: sitesError }] = await Promise.all([
     loadGoogle(userId),
-    supabase.from("sites").select("id, property, name").eq("user_id", userId).order("created_at"),
+    supabase.from("sites").select("id, property, name, description").eq("user_id", userId).order("created_at"),
   ]);
 
   return (

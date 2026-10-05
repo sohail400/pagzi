@@ -90,7 +90,7 @@ export default async function ProfilePage({ params }) {
         {sites.length > 0 && (
           <div className="grid gap-4">
             {sites.map((site) => (
-              <AnalyticsCard key={site.id} name={site.name} days={site.days} />
+              <AnalyticsCard key={site.id} name={site.name} description={site.description} days={site.days} />
             ))}
           </div>
         )}
