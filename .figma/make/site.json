@@ -1,0 +1,10 @@
+{
+  "description": "Displays click and impression data from Google Search Console in a sleek, rounded-corner card for clear, visual performance insights.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
