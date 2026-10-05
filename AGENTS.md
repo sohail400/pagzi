@@ -23,6 +23,7 @@ Originally generated with Figma Make (Vite), now migrated to **Next.js (App Rout
 - `app/(dashboard)/sites/page.js` (+ `SitesManager.js`, `actions.js`) – Dashboard: connect Google Search Console, add/remove sites
 - `app/(dashboard)/settings/page.js` – Dashboard: account, billing, public page settings, delete account
 - `app/api/google/connect/route.js`, `app/api/google/callback/route.js` – Google OAuth start and return (state cookie check)
+- `app/api/logo/route.js` + `lib/logo.js` – Public website icon for a site already saved in `sites` (fetched server-side, cached)
 - `app/[username]/page.js` – Public profile page (`indie.site/<username>`)
 - `components/DashboardLayout.js` – Dashboard sidebar / mobile nav (active link, user, logout)
 - `lib/supabase/server.js` – Supabase client for server code (cookie-based session)

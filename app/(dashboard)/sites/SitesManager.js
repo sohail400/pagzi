@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import SiteLogo from "@/components/SiteLogo";
 import { updateSites } from "./actions";
 
 const NOTICE_STYLES = {
@@ -29,9 +30,7 @@ function SiteRow({ row, isPending, pendingKey, formAction, onSubmit }) {
 
   return (
     <li className="flex items-center gap-3 py-4">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-sm font-bold uppercase text-stone-600">
-        {row.name.charAt(0)}
-      </span>
+      <SiteLogo name={row.name} className="h-10 w-10 rounded-xl" />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-stone-900">{row.name}</p>
         <p className="mt-0.5 truncate text-xs text-stone-400">

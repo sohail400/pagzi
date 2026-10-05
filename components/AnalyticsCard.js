@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import SiteLogo from "@/components/SiteLogo";
 import {
   CategoryScale,
   Chart,
@@ -109,8 +110,10 @@ export default function AnalyticsCard({ name, days }) {
           label: item.key,
           data: [],
           yAxisID: item.key,
+          // Higher order is drawn first, so clicks stay on top of the impressions fill.
+          order: item.key === "clicks" ? 0 : 1,
           borderColor: item.color,
-          borderWidth: 2,
+          borderWidth: item.key === "clicks" ? 2.5 : 2,
           borderDash: item.dash ?? [],
           backgroundColor: verticalGradient(item.color, item.fillOpacity),
           fill: "origin",
@@ -137,14 +140,14 @@ export default function AnalyticsCard({ name, days }) {
             beginAtZero: true,
             grid: { color: "rgba(0,0,0,0.05)", drawTicks: false },
             border: { display: false, dash: [3, 3] },
-            ticks: { ...tickStyle(8), maxTicksLimit: 5, padding: 6, callback: formatK },
+            ticks: { ...tickStyle(8), maxTicksLimit: 5, padding: 6, precision: 0, callback: formatK },
           },
           impressions: {
             position: "right",
             beginAtZero: true,
             grid: { color: "rgba(0,0,0,0.05)", drawTicks: false, drawOnChartArea: false },
             border: { display: false, dash: [3, 3] },
-            ticks: { ...tickStyle(8), maxTicksLimit: 5, padding: 6, callback: formatK },
+            ticks: { ...tickStyle(8), maxTicksLimit: 5, padding: 6, precision: 0, callback: formatK },
           },
         },
         plugins: {
@@ -209,9 +212,7 @@ export default function AnalyticsCard({ name, days }) {
   return (
     <div className="card rounded-3xl border border-stone-200 bg-[#faf7f2] p-4 shadow-[0_8px_28px_rgba(28,25,23,0.09)]">
       <div className="flex items-center gap-2">
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-xs font-bold uppercase text-white">
-          {name.charAt(0)}
-        </div>
+        <SiteLogo name={name} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold leading-none text-stone-800">{name}</p>
           <p className="mt-0.5 text-[10px] text-stone-400">Search Console</p>
