@@ -28,10 +28,11 @@ Originally generated with Figma Make (Vite), now migrated to **Next.js (App Rout
 - `lib/supabase/server.js` – Supabase client for server code (cookie-based session)
 - `lib/supabase/admin.js` – Server-only Supabase client with the secret key (bypasses RLS; check the user first)
 - `lib/google.js` – Server-only Google OAuth + Search Console API helpers and stored connections
+- `lib/traffic.js` – Syncs daily Search Console traffic into `site_traffic_daily` (when older than 6h, via `after()`) and loads 90-day series for the public page
 - `lib/encryption.js` – AES-256-GCM encryption for Google refresh tokens (`TOKEN_ENCRYPTION_KEY`)
 - `supabase/migrations/` – SQL run manually in the Supabase SQL Editor
 - `lib/supabase/proxy.js` + `proxy.js` – Refreshes the session on each request; redirects for protected/auth pages
-- `components/AnalyticsCard.js` – Website traffic card with clicks/impressions Chart.js chart
+- `components/AnalyticsCard.js` – Website traffic card (`name`, `days`) with clicks/impressions Chart.js chart and 28/90-day toggle
 - `public/` – Static images
 
 ## Stack

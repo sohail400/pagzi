@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { after } from "next/server";
 import { cache } from "react";
+import AnalyticsCard from "@/components/AnalyticsCard";
 import Avatar from "@/components/Avatar";
 import SocialLinks from "@/components/SocialLinks";
 import { PROFILE_COLUMNS, socialLinksOf, USERNAME_PATTERN } from "@/lib/profile";
 import { createClient } from "@/lib/supabase/server";
+import { getSitesWithTraffic, syncStaleSites } from "@/lib/traffic";
 
 const getProfile = cache(async (username) => {
   const normalized = username.toLowerCase();
@@ -13,11 +16,20 @@ const getProfile = cache(async (username) => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
-    .select(PROFILE_COLUMNS)
+    .select(`id, ${PROFILE_COLUMNS}`)
     .eq("username", normalized)
     .maybeSingle();
   return data;
 });
+
+async function loadSites(userId) {
+  try {
+    return await getSitesWithTraffic(await createClient(), userId);
+  } catch (error) {
+    console.error("Loading public traffic failed:", error);
+    return [];
+  }
+}
 
 export async function generateMetadata({ params }) {
   const { username } = await params;
@@ -37,6 +49,8 @@ export default async function ProfilePage({ params }) {
   if (!profile) notFound();
 
   const links = socialLinksOf(profile);
+  const sites = await loadSites(profile.id);
+  after(() => syncStaleSites(profile.id).catch((error) => console.error("Syncing traffic failed:", error)));
 
   return (
     <div className="min-h-screen bg-[#f5f0e8] px-4 py-8 font-sans text-stone-900 sm:py-12">
@@ -72,6 +86,14 @@ export default async function ProfilePage({ params }) {
           )}
           <SocialLinks links={links} className="mt-5" />
         </div>
+
+        {sites.length > 0 && (
+          <div className="grid gap-4">
+            {sites.map((site) => (
+              <AnalyticsCard key={site.id} name={site.name} days={site.days} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

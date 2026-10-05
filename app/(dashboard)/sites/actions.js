@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
 import { deleteConnection, getConnection, isAccessRevoked, listProperties, revokeToken } from "@/lib/google";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { syncStaleSites } from "@/lib/traffic";
 
 const MAX_SITES = 10;
 
@@ -41,6 +42,8 @@ async function addSite(userId, property) {
       { onConflict: "user_id,property", ignoreDuplicates: true }
     );
   if (error) throw error;
+
+  await syncStaleSites(userId).catch((syncError) => console.error("Syncing new site failed:", syncError));
   return { success: true };
 }
 

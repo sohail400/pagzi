@@ -1,5 +1,7 @@
+import { after } from "next/server";
 import { requireUser } from "@/lib/auth";
 import { getConnection, isAccessRevoked, listProperties } from "@/lib/google";
+import { syncStaleSites } from "@/lib/traffic";
 import SitesManager from "./SitesManager";
 
 export const metadata = {
@@ -44,6 +46,7 @@ async function loadGoogle(userId) {
 export default async function SitesPage({ searchParams }) {
   const { supabase, userId } = await requireUser();
   const { google } = await searchParams;
+  after(() => syncStaleSites(userId).catch((error) => console.error("Syncing traffic failed:", error)));
 
   const [{ connection, properties, loadError }, { data: sites, error: sitesError }] = await Promise.all([
     loadGoogle(userId),

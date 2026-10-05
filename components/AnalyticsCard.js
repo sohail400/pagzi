@@ -14,43 +14,18 @@ import {
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip);
 
-const data = [
-  { date: "Sep 1", clicks: 1240, impressions: 38400 },
-  { date: "Sep 2", clicks: 1580, impressions: 42100 },
-  { date: "Sep 3", clicks: 1320, impressions: 39800 },
-  { date: "Sep 4", clicks: 980, impressions: 31200 },
-  { date: "Sep 5", clicks: 860, impressions: 28700 },
-  { date: "Sep 6", clicks: 2140, impressions: 51300 },
-  { date: "Sep 7", clicks: 2380, impressions: 56800 },
-  { date: "Sep 8", clicks: 2670, impressions: 61400 },
-  { date: "Sep 9", clicks: 2210, impressions: 54900 },
-  { date: "Sep 10", clicks: 1940, impressions: 48200 },
-  { date: "Sep 11", clicks: 2050, impressions: 52700 },
-  { date: "Sep 12", clicks: 2480, impressions: 58300 },
-  { date: "Sep 13", clicks: 2890, impressions: 67100 },
-  { date: "Sep 14", clicks: 3120, impressions: 71600 },
-  { date: "Sep 15", clicks: 2760, impressions: 64800 },
-];
+const RANGES = [28, 90];
+
+const dateLabel = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
 
 function formatK(value) {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
   return value >= 1000 ? `${(value / 1000).toFixed(1)}k` : String(value);
 }
 
-const totals = {
-  clicks: data.reduce((sum, point) => sum + point.clicks, 0),
-  impressions: data.reduce((sum, point) => sum + point.impressions, 0),
-};
-
 const series = [
-  { label: "Clicks", value: formatK(totals.clicks), key: "clicks", color: "#2563eb", fillOpacity: [0.18, 0.02] },
-  {
-    label: "Impressions",
-    value: formatK(totals.impressions),
-    key: "impressions",
-    color: "#7c3aed",
-    fillOpacity: [0.14, 0.01],
-    dash: [5, 3],
-  },
+  { label: "Clicks", key: "clicks", color: "#2563eb", fillOpacity: [0.18, 0.02] },
+  { label: "Impressions", key: "impressions", color: "#7c3aed", fillOpacity: [0.14, 0.01], dash: [5, 3] },
 ];
 
 function hexToRgba(hex, alpha) {
@@ -109,11 +84,17 @@ function ChartTooltip({ tooltip }) {
   );
 }
 
-export default function AnalyticsCard() {
+export default function AnalyticsCard({ name, days }) {
+  const [range, setRange] = useState(28);
   const [hiddenSeries, setHiddenSeries] = useState([]);
   const [tooltip, setTooltip] = useState(null);
   const canvasRef = useRef(null);
   const chartRef = useRef(null);
+
+  const visibleDays = days.slice(-range);
+  const totals = Object.fromEntries(
+    series.map((item) => [item.key, visibleDays.reduce((sum, day) => sum + day[item.key], 0)])
+  );
 
   useEffect(() => {
     const monoFont = getComputedStyle(document.documentElement).getPropertyValue("--font-dm-mono") || "monospace";
@@ -123,10 +104,10 @@ export default function AnalyticsCard() {
       type: "line",
       plugins: [hoverLine],
       data: {
-        labels: data.map((point) => point.date),
+        labels: [],
         datasets: series.map((item) => ({
           label: item.key,
-          data: data.map((point) => point[item.key]),
+          data: [],
           yAxisID: item.key,
           borderColor: item.color,
           borderWidth: 2,
@@ -149,12 +130,7 @@ export default function AnalyticsCard() {
           x: {
             grid: { display: false },
             border: { display: false },
-            ticks: {
-              ...tickStyle(9),
-              autoSkip: false,
-              maxRotation: 0,
-              callback: (_, index) => (index % 4 === 0 ? data[index].date : null),
-            },
+            ticks: { ...tickStyle(9), maxRotation: 0, autoSkipPadding: 12 },
           },
           clicks: {
             position: "left",
@@ -202,6 +178,16 @@ export default function AnalyticsCard() {
 
   useEffect(() => {
     const chart = chartRef.current;
+    const shown = days.slice(-range);
+    chart.data.labels = shown.map((day) => dateLabel.format(new Date(`${day.date}T00:00:00Z`)));
+    series.forEach((item, index) => {
+      chart.data.datasets[index].data = shown.map((day) => day[item.key]);
+    });
+    chart.update();
+  }, [days, range]);
+
+  useEffect(() => {
+    const chart = chartRef.current;
     if (!chart) return;
     series.forEach((item, index) => {
       const visible = !hiddenSeries.includes(item.key);
@@ -223,12 +209,27 @@ export default function AnalyticsCard() {
   return (
     <div className="card rounded-3xl border border-stone-200 bg-[#faf7f2] p-4 shadow-[0_8px_28px_rgba(28,25,23,0.09)]">
       <div className="flex items-center gap-2">
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-xs font-bold text-white">
-          S
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-xs font-bold uppercase text-white">
+          {name.charAt(0)}
         </div>
-        <div>
-          <p className="text-sm font-semibold leading-none text-stone-800">shopify-store.com</p>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold leading-none text-stone-800">{name}</p>
           <p className="mt-0.5 text-[10px] text-stone-400">Search Console</p>
+        </div>
+        <div className="join shrink-0 rounded-full border border-stone-200 bg-white p-0.5" role="group" aria-label="Date range">
+          {RANGES.map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setRange(value)}
+              aria-pressed={range === value}
+              className={`btn join-item btn-xs h-6 rounded-full border-0 px-2.5 text-[10px] font-semibold shadow-none ${
+                range === value ? "bg-stone-900 text-white hover:bg-stone-900" : "bg-transparent text-stone-500 hover:bg-stone-100"
+              }`}
+            >
+              {value}d
+            </button>
+          ))}
         </div>
       </div>
 
@@ -243,7 +244,7 @@ export default function AnalyticsCard() {
           >
             <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: stat.color }} />
             <span className="truncate text-[10px] font-medium text-stone-500">{stat.label}</span>
-            <span className="ml-auto text-xs font-bold">{stat.value}</span>
+            <span className="ml-auto text-xs font-bold">{formatK(totals[stat.key])}</span>
           </button>
         ))}
       </div>
