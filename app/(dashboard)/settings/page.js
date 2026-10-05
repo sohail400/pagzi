@@ -1,10 +1,7 @@
 "use client";
 
-import DashboardLayout from "@/components/DashboardLayout";
-
 export default function SettingsPage() {
   return (
-    <DashboardLayout active="settings">
       <main className="px-4 py-8 sm:px-8 lg:px-10 lg:py-10">
         <div className="mx-auto max-w-4xl">
           <div className="mb-8">
@@ -130,6 +127,5 @@ export default function SettingsPage() {
           </div>
         </div>
       </main>
-    </DashboardLayout>
   );
 }

@@ -1,8 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useActionState } from "react";
+import { signup } from "@/app/auth/actions";
 
 export default function SignupPage() {
+  const [state, formAction, pending] = useActionState(signup, null);
+
   return (
     <div className="min-h-screen bg-[#f8f7f3] font-sans text-stone-900">
       <div className="navbar mx-auto max-w-6xl px-5 py-5 sm:px-8">
@@ -38,7 +42,25 @@ export default function SignupPage() {
 
           <div className="card rounded-[2rem] border border-stone-200 bg-white shadow-[0_16px_50px_rgba(28,25,23,0.07)]">
             <div className="card-body gap-0 p-6 sm:p-8">
-              <form className="space-y-5" onSubmit={(event) => event.preventDefault()}>
+              {state?.success ? (
+                <div role="status" className="text-center">
+                  <p className="text-lg font-bold text-stone-900">Check your email</p>
+                  <p className="mt-2 text-sm leading-6 text-stone-600">
+                    We sent a confirmation link to <span className="font-semibold text-stone-900">{state.email}</span>.
+                    Click it to activate your account.
+                  </p>
+                  <p className="mt-4 text-xs leading-5 text-stone-400">
+                    Can’t find it? Check your spam folder. The link expires in 24 hours.
+                  </p>
+                </div>
+              ) : (
+              <form className="space-y-5" action={formAction}>
+                {state?.error && (
+                  <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {state.error}
+                  </p>
+                )}
+
                 <fieldset className="fieldset p-0">
                   <legend className="fieldset-legend pb-2 text-sm font-semibold text-stone-700">Your name</legend>
                   <input
@@ -46,6 +68,8 @@ export default function SignupPage() {
                     name="name"
                     autoComplete="name"
                     required
+                    maxLength={80}
+                    defaultValue={state?.values?.name}
                     placeholder="Sohail Shaikh"
                     className="input h-12 w-full rounded-xl border-stone-300 bg-white px-4 text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-700 focus:outline-none"
                   />
@@ -58,6 +82,7 @@ export default function SignupPage() {
                     name="email"
                     autoComplete="email"
                     required
+                    defaultValue={state?.values?.email}
                     placeholder="you@example.com"
                     className="input h-12 w-full rounded-xl border-stone-300 bg-white px-4 text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-700 focus:outline-none"
                   />
@@ -89,11 +114,13 @@ export default function SignupPage() {
 
                 <button
                   type="submit"
-                  className="btn h-12 w-full rounded-full border-stone-900 bg-stone-900 font-semibold text-white shadow-none hover:border-stone-800 hover:bg-stone-800"
+                  disabled={pending}
+                  className="btn h-12 w-full rounded-full border-stone-900 bg-stone-900 font-semibold text-white shadow-none hover:border-stone-800 hover:bg-stone-800 disabled:border-stone-700 disabled:bg-stone-700 disabled:text-white"
                 >
-                  Create account
+                  {pending ? "Creating account…" : "Create account"}
                 </button>
               </form>
+              )}
 
               <p className="mt-6 text-center text-sm text-stone-500">
                 Already have an account?{" "}

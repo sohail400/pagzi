@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { logout } from "@/app/auth/actions";
 
 const navigation = [
   { label: "Profile", href: "/admin", key: "profile" },
@@ -6,7 +10,16 @@ const navigation = [
   { label: "Settings", href: "/settings", key: "settings" },
 ];
 
-export default function DashboardLayout({ active, children }) {
+function initials(name, email) {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (words.length) return words.slice(0, 2).map((word) => word[0].toUpperCase()).join("");
+  return email.slice(0, 1).toUpperCase();
+}
+
+export default function DashboardLayout({ user, children }) {
+  const pathname = usePathname();
+  const active = navigation.find((item) => item.href && pathname.startsWith(item.href))?.key;
+
   return (
     <div className="min-h-screen bg-[#f8f7f3] font-sans text-stone-900">
       <div className="mx-auto flex min-h-screen max-w-[1440px]">
@@ -47,20 +60,22 @@ export default function DashboardLayout({ active, children }) {
             <div className="mb-4 flex items-center gap-3 px-2">
               <div className="avatar placeholder">
                 <div className="w-9 rounded-full bg-amber-100 text-sm font-bold text-stone-700">
-                  <span>SS</span>
+                  <span>{initials(user.name, user.email)}</span>
                 </div>
               </div>
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-stone-800">Sohail Shaikh</p>
-                <p className="truncate text-xs text-stone-400">sohail@indie.site</p>
+                {user.name && <p className="truncate text-sm font-semibold text-stone-800">{user.name}</p>}
+                <p className="truncate text-xs text-stone-400">{user.email}</p>
               </div>
             </div>
-            <Link
-              href="/login"
-              className="btn btn-ghost btn-sm w-full justify-start rounded-xl px-3 font-medium text-stone-500 hover:bg-stone-100 hover:text-stone-900"
-            >
-              Logout
-            </Link>
+            <form action={logout}>
+              <button
+                type="submit"
+                className="btn btn-ghost btn-sm w-full justify-start rounded-xl px-3 font-medium text-stone-500 hover:bg-stone-100 hover:text-stone-900"
+              >
+                Logout
+              </button>
+            </form>
           </div>
         </aside>
 
@@ -73,9 +88,11 @@ export default function DashboardLayout({ active, children }) {
                 </span>
                 indie.site
               </Link>
-              <Link href="/login" className="btn btn-ghost btn-sm rounded-full text-stone-500">
-                Logout
-              </Link>
+              <form action={logout}>
+                <button type="submit" className="btn btn-ghost btn-sm rounded-full text-stone-500">
+                  Logout
+                </button>
+              </form>
             </div>
             <div className="mt-4 flex gap-1 overflow-x-auto">
               {navigation.map((item) =>

@@ -1,11 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import DashboardLayout from "@/components/DashboardLayout";
 
 export default function AdminPage() {
   return (
-    <DashboardLayout active="profile">
       <main className="px-4 py-8 sm:px-8 lg:px-10 lg:py-10">
         <div className="mx-auto max-w-6xl">
           <div className="mb-8">
@@ -179,6 +177,5 @@ export default function AdminPage() {
           </div>
         </div>
       </main>
-    </DashboardLayout>
   );
 }
