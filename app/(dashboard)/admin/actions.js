@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
-import { LIMITS, SOCIAL_LINKS, USERNAME_PATTERN } from "@/lib/profile";
+import { LIMITS, PROFILE_COLUMNS, SOCIAL_LINKS, USERNAME_PATTERN } from "@/lib/profile";
 
 const AVATAR_TYPES = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
@@ -88,7 +88,7 @@ export async function updateProfile(previousState, formData) {
     .from("profiles")
     .update(updates)
     .eq("id", userId)
-    .select("username, name, bio, location, avatar_url, x_url, linkedin_url, instagram_url")
+    .select(PROFILE_COLUMNS)
     .maybeSingle();
 
   if (error || !saved) {

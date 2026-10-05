@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import Avatar from "@/components/Avatar";
-import { socialLinksOf, USERNAME_PATTERN } from "@/lib/profile";
+import SocialLinks from "@/components/SocialLinks";
+import { PROFILE_COLUMNS, socialLinksOf, USERNAME_PATTERN } from "@/lib/profile";
 import { createClient } from "@/lib/supabase/server";
 
 const getProfile = cache(async (username) => {
@@ -12,7 +13,7 @@ const getProfile = cache(async (username) => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
-    .select("username, name, bio, location, avatar_url, x_url, linkedin_url, instagram_url")
+    .select(PROFILE_COLUMNS)
     .eq("username", normalized)
     .maybeSingle();
   return data;
@@ -54,31 +55,14 @@ export default async function ProfilePage({ params }) {
           <p className="mt-4 text-3xl font-bold leading-none tracking-tight sm:text-4xl">
             {profile.name || `@${profile.username}`}
           </p>
-          {(profile.location || links.length > 0) && (
+          {profile.location && (
             <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-stone-600">
-              {profile.location && (
-                <span className="flex items-center gap-1.5">
-                  <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-current">
-                    <path d="M12 2a8 8 0 0 0-8 8c0 5 8 12 8 12s8-7 8-12a8 8 0 0 0-8-8Zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z" />
-                  </svg>
-                  {profile.location}
-                </span>
-              )}
-              {links.length > 0 && (
-                <div className={`flex items-center gap-3 ${profile.location ? "border-l border-stone-300 pl-3" : ""}`}>
-                  {links.map((link) => (
-                    <a
-                      key={link.label}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer nofollow"
-                      className="link font-medium text-stone-500"
-                    >
-                      {link.label}
-                    </a>
-                  ))}
-                </div>
-              )}
+              <span className="flex items-center gap-1.5">
+                <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-current">
+                  <path d="M12 2a8 8 0 0 0-8 8c0 5 8 12 8 12s8-7 8-12a8 8 0 0 0-8-8Zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z" />
+                </svg>
+                {profile.location}
+              </span>
             </div>
           )}
           {profile.bio && (
@@ -86,6 +70,7 @@ export default async function ProfilePage({ params }) {
               {profile.bio}
             </p>
           )}
+          <SocialLinks links={links} className="mt-5" />
         </div>
       </div>
     </div>

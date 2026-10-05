@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { startTransition, useActionState, useEffect, useRef, useState } from "react";
 import Avatar from "@/components/Avatar";
+import SocialLinks from "@/components/SocialLinks";
 import { LIMITS, SOCIAL_LINKS, socialLinksOf } from "@/lib/profile";
 import { updateProfile } from "./actions";
 
@@ -10,15 +11,16 @@ const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 const AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 function toFormValues(profile) {
-  return {
+  const values = {
     username: profile.username ?? "",
     name: profile.name ?? "",
     bio: profile.bio ?? "",
     location: profile.location ?? "",
-    x_url: profile.x_url ?? "",
-    linkedin_url: profile.linkedin_url ?? "",
-    instagram_url: profile.instagram_url ?? "",
   };
+  SOCIAL_LINKS.forEach((link) => {
+    values[link.key] = profile[link.key] ?? "";
+  });
+  return values;
 }
 
 export default function ProfileForm({ profile, siteUrl }) {
@@ -79,7 +81,10 @@ export default function ProfileForm({ profile, siteUrl }) {
   }
 
   const publicUrl = `${siteUrl}/${savedUsername || "your-username"}`;
-  const previewDetails = [values.location, ...socialLinksOf(values).map((link) => link.label)].filter(Boolean);
+  const previewLinks = socialLinksOf(values).map((link) => ({
+    ...link,
+    url: /^https?:\/\//i.test(link.url) ? link.url : `https://${link.url}`,
+  }));
 
   return (
     <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
@@ -260,8 +265,9 @@ export default function ProfileForm({ profile, siteUrl }) {
           <div className="card-body p-5">
             <Avatar src={avatarPreview} name={values.name} className="w-16 ring-2 ring-amber-200" />
             <p className="mt-1 text-xl font-bold tracking-tight text-stone-900">{values.name || "Your name"}</p>
-            {previewDetails.length > 0 && <p className="text-xs text-stone-500">{previewDetails.join(" · ")}</p>}
+            {values.location && <p className="text-xs text-stone-500">{values.location}</p>}
             {values.bio && <p className="mt-2 whitespace-pre-line break-words text-xs leading-5 text-stone-600">{values.bio}</p>}
+            <SocialLinks links={previewLinks} size="sm" className="mt-2" />
           </div>
         </div>
         {savedUsername ? (

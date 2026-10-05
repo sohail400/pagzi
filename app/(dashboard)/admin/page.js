@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { requireUser } from "@/lib/auth";
+import { PROFILE_COLUMNS } from "@/lib/profile";
 import ProfileForm from "./ProfileForm";
 
 export const metadata = {
@@ -10,7 +11,7 @@ export default async function AdminPage() {
   const { supabase, userId } = await requireUser();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username, name, bio, location, avatar_url, x_url, linkedin_url, instagram_url")
+    .select(PROFILE_COLUMNS)
     .eq("id", userId)
     .maybeSingle();
 
