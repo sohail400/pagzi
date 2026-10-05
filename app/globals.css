@@ -19,3 +19,13 @@
 html {
   scroll-behavior: smooth;
 }
+
+/* daisyUI themes are disabled, so its --border size is undefined and form fields render without borders. */
+.input,
+.textarea,
+.select,
+.file-input,
+.checkbox,
+.toggle {
+  --border: 1px;
+}

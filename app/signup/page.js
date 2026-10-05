@@ -107,7 +107,7 @@ export default function SignupPage() {
                     type="checkbox"
                     name="terms"
                     required
-                    className="checkbox checkbox-sm mt-0.5 rounded border-stone-300"
+                    className="checkbox checkbox-sm mt-0.5 rounded border border-stone-300 text-white checked:border-stone-900 checked:bg-stone-900"
                   />
                   <span>I agree to the terms and privacy policy.</span>
                 </label>

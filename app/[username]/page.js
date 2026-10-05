@@ -1,7 +1,42 @@
 import Link from "next/link";
-import AnalyticsCard from "@/components/AnalyticsCard";
+import { notFound } from "next/navigation";
+import { cache } from "react";
+import Avatar from "@/components/Avatar";
+import { socialLinksOf, USERNAME_PATTERN } from "@/lib/profile";
+import { createClient } from "@/lib/supabase/server";
 
-export default function ProfilePage() {
+const getProfile = cache(async (username) => {
+  const normalized = username.toLowerCase();
+  if (!USERNAME_PATTERN.test(normalized)) return null;
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select("username, name, bio, location, avatar_url, x_url, linkedin_url, instagram_url")
+    .eq("username", normalized)
+    .maybeSingle();
+  return data;
+});
+
+export async function generateMetadata({ params }) {
+  const { username } = await params;
+  const profile = await getProfile(username);
+  if (!profile) return { title: "Page not found · indie.site" };
+
+  const displayName = profile.name || `@${profile.username}`;
+  return {
+    title: `${displayName} · indie.site`,
+    description: profile.bio || `${displayName} on indie.site`,
+  };
+}
+
+export default async function ProfilePage({ params }) {
+  const { username } = await params;
+  const profile = await getProfile(username);
+  if (!profile) notFound();
+
+  const links = socialLinksOf(profile);
+
   return (
     <div className="min-h-screen bg-[#f5f0e8] px-4 py-8 font-sans text-stone-900 sm:py-12">
       <div className="mx-auto w-full max-w-2xl">
@@ -10,50 +45,47 @@ export default function ProfilePage() {
         </Link>
 
         <div className="mb-7 px-2">
-          <div className="avatar">
-            <div className="w-24 rounded-full ring-4 ring-amber-200 shadow-sm sm:w-28">
-              <img src="/profile.jpg" alt="Sohail Shaikh" className="object-cover" />
-            </div>
-          </div>
-          <p className="mt-4 text-3xl font-bold leading-none tracking-tight sm:text-4xl">Sohail Shaikh</p>
-          <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-stone-600">
-            <span className="flex items-center gap-1.5">
-              <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-current">
-                <path d="M12 2a8 8 0 0 0-8 8c0 5 8 12 8 12s8-7 8-12a8 8 0 0 0-8-8Zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z" />
-              </svg>
-              Mumbai
-            </span>
-            <div className="flex items-center gap-3 border-l border-stone-300 pl-3">
-              <a href="https://x.com/" target="_blank" rel="noreferrer" className="link font-medium text-stone-500">
-                X
-              </a>
-              <a
-                href="https://www.linkedin.com/"
-                target="_blank"
-                rel="noreferrer"
-                className="link font-medium text-stone-500"
-              >
-                LinkedIn
-              </a>
-              <a
-                href="https://www.instagram.com/"
-                target="_blank"
-                rel="noreferrer"
-                className="link font-medium text-stone-500"
-              >
-                Instagram
-              </a>
-            </div>
-          </div>
-          <p className="mt-4 max-w-lg text-sm font-medium leading-relaxed text-stone-700 sm:text-base">
-            I design and build thoughtful digital products, turning ambitious ideas into simple and useful experiences.
+          <Avatar
+            src={profile.avatar_url}
+            name={profile.name}
+            className="w-24 ring-4 ring-amber-200 shadow-sm sm:w-28"
+            textClassName="text-3xl"
+          />
+          <p className="mt-4 text-3xl font-bold leading-none tracking-tight sm:text-4xl">
+            {profile.name || `@${profile.username}`}
           </p>
-        </div>
-
-        <div className="grid gap-4">
-          {Array.from({ length: 5 }, (_, index) => (
-            <AnalyticsCard key={index} />
-          ))}
+          {(profile.location || links.length > 0) && (
+            <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-stone-600">
+              {profile.location && (
+                <span className="flex items-center gap-1.5">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-current">
+                    <path d="M12 2a8 8 0 0 0-8 8c0 5 8 12 8 12s8-7 8-12a8 8 0 0 0-8-8Zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z" />
+                  </svg>
+                  {profile.location}
+                </span>
+              )}
+              {links.length > 0 && (
+                <div className={`flex items-center gap-3 ${profile.location ? "border-l border-stone-300 pl-3" : ""}`}>
+                  {links.map((link) => (
+                    <a
+                      key={link.label}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      className="link font-medium text-stone-500"
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          {profile.bio && (
+            <p className="mt-4 max-w-lg whitespace-pre-line break-words text-sm font-medium leading-relaxed text-stone-700 sm:text-base">
+              {profile.bio}
+            </p>
+          )}
         </div>
       </div>
     </div>

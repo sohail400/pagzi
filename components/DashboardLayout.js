@@ -3,18 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/auth/actions";
+import { initials } from "@/lib/profile";
 
 const navigation = [
   { label: "Profile", href: "/admin", key: "profile" },
   { label: "Sites", href: "", key: "sites", disabled: true },
   { label: "Settings", href: "/settings", key: "settings" },
 ];
-
-function initials(name, email) {
-  const words = name.trim().split(/\s+/).filter(Boolean);
-  if (words.length) return words.slice(0, 2).map((word) => word[0].toUpperCase()).join("");
-  return email.slice(0, 1).toUpperCase();
-}
 
 export default function DashboardLayout({ user, children }) {
   const pathname = usePathname();
