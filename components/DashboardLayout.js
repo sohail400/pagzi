@@ -7,13 +7,13 @@ import { initials } from "@/lib/profile";
 
 const navigation = [
   { label: "Profile", href: "/admin", key: "profile" },
-  { label: "Sites", href: "", key: "sites", disabled: true },
+  { label: "Sites", href: "/sites", key: "sites" },
   { label: "Settings", href: "/settings", key: "settings" },
 ];
 
 export default function DashboardLayout({ user, children }) {
   const pathname = usePathname();
-  const active = navigation.find((item) => item.href && pathname.startsWith(item.href))?.key;
+  const active = navigation.find((item) => pathname.startsWith(item.href))?.key;
 
   return (
     <div className="min-h-screen bg-[#f8f7f3] font-sans text-stone-900">
@@ -29,23 +29,16 @@ export default function DashboardLayout({ user, children }) {
             <ul className="menu mt-3 w-full gap-1 p-0">
               {navigation.map((item) => (
                 <li key={item.key}>
-                  {item.disabled ? (
-                    <span className="flex cursor-default justify-between rounded-xl px-3 py-2.5 text-stone-400 hover:bg-transparent">
-                      {item.label}
-                      <span className="badge badge-ghost badge-xs border-stone-200 text-[9px] uppercase">Soon</span>
-                    </span>
-                  ) : (
-                    <Link
-                      href={item.href}
-                      className={`rounded-xl px-3 py-2.5 font-medium ${
-                        active === item.key
-                          ? "bg-stone-900 text-white hover:bg-stone-900"
-                          : "text-stone-600 hover:bg-stone-100 hover:text-stone-900"
-                      }`}
-                    >
-                      {item.label}
-                    </Link>
-                  )}
+                  <Link
+                    href={item.href}
+                    className={`rounded-xl px-3 py-2.5 font-medium ${
+                      active === item.key
+                        ? "bg-stone-900 text-white hover:bg-stone-900"
+                        : "text-stone-600 hover:bg-stone-100 hover:text-stone-900"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -90,27 +83,17 @@ export default function DashboardLayout({ user, children }) {
               </form>
             </div>
             <div className="mt-4 flex gap-1 overflow-x-auto">
-              {navigation.map((item) =>
-                item.disabled ? (
-                  <span
-                    key={item.key}
-                    className="flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-stone-400"
-                  >
-                    {item.label}
-                    <span className="badge badge-ghost badge-xs text-[8px] uppercase">Soon</span>
-                  </span>
-                ) : (
-                  <Link
-                    key={item.key}
-                    href={item.href}
-                    className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium ${
-                      active === item.key ? "bg-stone-900 text-white" : "text-stone-600"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                )
-              )}
+              {navigation.map((item) => (
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium ${
+                    active === item.key ? "bg-stone-900 text-white" : "text-stone-600"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
             </div>
           </div>
 

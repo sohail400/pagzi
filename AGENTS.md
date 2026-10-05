@@ -20,10 +20,16 @@ Originally generated with Figma Make (Vite), now migrated to **Next.js (App Rout
 - `app/auth/confirm/route.js` – Email confirmation link handler (PKCE `code` or `token_hash`)
 - `app/(dashboard)/layout.js` – Verifies the user with `getClaims()` and renders `DashboardLayout`
 - `app/(dashboard)/admin/page.js` – Dashboard: profile editor with live preview
+- `app/(dashboard)/sites/page.js` (+ `SitesManager.js`, `actions.js`) – Dashboard: connect Google Search Console, add/remove sites
 - `app/(dashboard)/settings/page.js` – Dashboard: account, billing, public page settings, delete account
+- `app/api/google/connect/route.js`, `app/api/google/callback/route.js` – Google OAuth start and return (state cookie check)
 - `app/[username]/page.js` – Public profile page (`indie.site/<username>`)
 - `components/DashboardLayout.js` – Dashboard sidebar / mobile nav (active link, user, logout)
 - `lib/supabase/server.js` – Supabase client for server code (cookie-based session)
+- `lib/supabase/admin.js` – Server-only Supabase client with the secret key (bypasses RLS; check the user first)
+- `lib/google.js` – Server-only Google OAuth + Search Console API helpers and stored connections
+- `lib/encryption.js` – AES-256-GCM encryption for Google refresh tokens (`TOKEN_ENCRYPTION_KEY`)
+- `supabase/migrations/` – SQL run manually in the Supabase SQL Editor
 - `lib/supabase/proxy.js` + `proxy.js` – Refreshes the session on each request; redirects for protected/auth pages
 - `components/AnalyticsCard.js` – Website traffic card with clicks/impressions Chart.js chart
 - `public/` – Static images
@@ -36,7 +42,9 @@ Originally generated with Figma Make (Vite), now migrated to **Next.js (App Rout
 - Fonts: Inter and DM Mono via `next/font` in `app/layout.js`
 - Charts: Chart.js used directly (no React wrapper), registering only the pieces it needs
 - Supabase Auth via `@supabase/ssr` (email + password). Always use `getClaims()` (never `getSession()`) to verify users on the server.
-- Planned: Supabase Postgres + Storage, Google Search Console API, Dodo Payments
+- Supabase Postgres + Storage (`profiles`, `avatars` bucket, `google_connections`, `sites`, `site_traffic_daily`)
+- Google Search Console API via `google-auth-library` (read-only `webmasters.readonly` scope). Refresh tokens are encrypted and stored in `google_connections`, which has RLS with no policies (server/secret key only).
+- Planned: Dodo Payments
 
 ## UI rules (daisyUI)
 
