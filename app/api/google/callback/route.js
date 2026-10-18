@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
+import { hasFullAccess } from "@/lib/access";
 import { requireUser } from "@/lib/auth";
 import { STATE_COOKIE, exchangeCode, revokeToken, saveConnection } from "@/lib/google";
 
@@ -8,7 +9,11 @@ function sameState(a, b) {
 }
 
 export async function GET(request) {
-  const { userId } = await requireUser();
+  const { supabase, userId } = await requireUser();
+  const profile = await supabase.from("profiles").select("username, paid_at").eq("id", userId).maybeSingle();
+  if (profile.error || !hasFullAccess(profile.data)) {
+    return NextResponse.redirect(new URL("/settings?checkout=required", request.url));
+  }
   const params = request.nextUrl.searchParams;
 
   const finish = (status) => {

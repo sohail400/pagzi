@@ -18,6 +18,22 @@
 
 html {
   scroll-behavior: smooth;
+  background-color: #1f1f1f;
+}
+
+.input,
+.textarea,
+.select,
+.file-input {
+  background-color: #1f1f1f;
+  color: #f5f5f4;
+  border-color: rgba(255, 255, 255, 0.16);
+  color-scheme: dark;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: #a8a29e;
 }
 
 /* daisyUI themes are disabled, so its --border size is undefined and form fields render without borders. */
@@ -28,4 +44,78 @@ html {
 .checkbox,
 .toggle {
   --border: 1px;
+}
+
+.btn-save {
+  border-color: #ff78b7;
+  background-color: #ff78b7;
+  color: #fff;
+}
+
+.btn-save:hover {
+  border-color: #ff96c6;
+  background-color: #ff96c6;
+  color: #fff;
+}
+
+.btn-save:disabled {
+  border-color: #ff78b7;
+  background-color: #ff78b7;
+  color: #fff;
+  opacity: 0.45;
+}
+
+.file-input::file-selector-button,
+.file-input::-webkit-file-upload-button {
+  border: 0;
+  border-radius: 0.75rem;
+  background-color: #ff78b7;
+  color: #fff;
+  cursor: pointer;
+}
+
+.file-input::file-selector-button:hover,
+.file-input::-webkit-file-upload-button:hover {
+  background-color: #ff96c6;
+}
+
+@keyframes preview-in {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.preview-in {
+  animation: preview-in 700ms ease;
+}
+
+.landing-phone .mockup-phone,
+.landing-phone .mockup-phone-display {
+  width: 100%;
+}
+
+@keyframes showcase-drift {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-28px);
+  }
+}
+
+.showcase-drift {
+  animation: showcase-drift 16s ease-in-out infinite alternate;
+}
+
+.showcase-veil {
+  background: rgba(16, 18, 28, 0.42);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .showcase-drift {
+    animation: none;
+  }
 }

@@ -65,6 +65,39 @@ export async function login(previousState, formData) {
   redirect("/admin");
 }
 
+export async function requestPasswordReset(previousState, formData) {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!EMAIL_PATTERN.test(email)) return { error: "Please enter a valid email address.", values: { email } };
+
+  const origin = (await headers()).get("origin");
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/confirm?next=/reset-password`,
+  });
+
+  if (error) return { error: friendlyError(error), values: { email } };
+  return { success: true, email };
+}
+
+export async function updatePassword(previousState, formData) {
+  const password = String(formData.get("password") ?? "");
+  const confirm = String(formData.get("confirm") ?? "");
+
+  if (password.length < 8) return { error: "Your password must be at least 8 characters." };
+  if (password !== confirm) return { error: "Those passwords don't match." };
+
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  if (!data?.claims) {
+    return { error: "This reset link is invalid or has expired. Request a new one." };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { error: friendlyError(error) };
+
+  redirect("/admin");
+}
+
 export async function logout() {
   const supabase = await createClient();
   await supabase.auth.signOut({ scope: "local" });

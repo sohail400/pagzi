@@ -1,12 +1,20 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireUser } from "@/lib/auth";
-import { LIMITS, PROFILE_COLUMNS, SOCIAL_LINKS, USERNAME_PATTERN } from "@/lib/profile";
+import { requireFullAccess } from "@/lib/payments";
+import { LIMITS, SOCIAL_LINKS, USERNAME_PATTERN, fetchProfile } from "@/lib/profile";
 
 const AVATAR_TYPES = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 const AVATAR_PATH_MARKER = "/storage/v1/object/public/avatars/";
+
+function normalizeEmail(raw) {
+  const value = raw.trim().replace(/^mailto:/i, "");
+  if (!value) return { url: null };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return { invalid: true };
+  const url = `mailto:${value}`;
+  return url.length > LIMITS.url ? { invalid: true } : { url };
+}
 
 function normalizeSocialUrl(raw, hosts) {
   const value = raw.trim();
@@ -41,7 +49,7 @@ function databaseError(error) {
 }
 
 export async function updateProfile(previousState, formData) {
-  const { supabase, userId } = await requireUser();
+  const { supabase, userId } = await requireFullAccess();
 
   const text = (key) => String(formData.get(key) ?? "").trim();
   const username = text("username").toLowerCase();
@@ -58,8 +66,9 @@ export async function updateProfile(previousState, formData) {
 
   const updates = { username, name, bio, location };
   for (const link of SOCIAL_LINKS) {
-    const { url, invalid } = normalizeSocialUrl(text(link.key), link.hosts);
-    if (invalid) return { error: `Please enter a valid ${link.label} profile link, for example ${link.placeholder}.` };
+    const { url, invalid } =
+      link.kind === "email" ? normalizeEmail(text(link.key)) : normalizeSocialUrl(text(link.key), link.hosts);
+    if (invalid) return { error: `Please enter a valid ${link.label} ${link.kind === "email" ? "address" : "profile link"}, for example ${link.placeholder}.` };
     updates[link.key] = url;
   }
 
@@ -84,12 +93,13 @@ export async function updateProfile(previousState, formData) {
     updates.avatar_url = supabase.storage.from("avatars").getPublicUrl(newAvatarPath).data.publicUrl;
   }
 
-  const { data: saved, error } = await supabase
-    .from("profiles")
-    .update(updates)
-    .eq("id", userId)
-    .select(PROFILE_COLUMNS)
-    .maybeSingle();
+  const { error: updateError } = await supabase.from("profiles").update(updates).eq("id", userId);
+  if (updateError) {
+    if (newAvatarPath) await supabase.storage.from("avatars").remove([newAvatarPath]);
+    return { error: databaseError(updateError) };
+  }
+
+  const { data: saved, error } = await fetchProfile(supabase, userId);
 
   if (error || !saved) {
     if (newAvatarPath) await supabase.storage.from("avatars").remove([newAvatarPath]);

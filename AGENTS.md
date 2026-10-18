@@ -20,7 +20,8 @@ Originally generated with Figma Make (Vite), now migrated to **Next.js (App Rout
 - `app/auth/confirm/route.js` – Email confirmation link handler (PKCE `code` or `token_hash`)
 - `app/(dashboard)/layout.js` – Verifies the user with `getClaims()` and renders `DashboardLayout`
 - `app/(dashboard)/admin/page.js` – Dashboard: profile editor with live preview
-- `app/(dashboard)/sites/page.js` (+ `SitesManager.js`, `actions.js`) – Dashboard: connect Google Search Console, add/remove sites, 6–8 word description
+- `app/(dashboard)/sites/page.js` (+ `SitesManager.js`, `actions.js`) – Dashboard: connect Google Search Console, add/remove sites, description, uploaded logo, category, status, anonymous graph-only card
+- `app/(dashboard)/style/page.js` (+ `StyleEditor.js`, `actions.js`) – Dashboard: chart colors, font, card and page backgrounds, with a live preview
 - `app/(dashboard)/settings/page.js` – Dashboard: account, billing, public page settings, delete account
 - `app/api/google/connect/route.js`, `app/api/google/callback/route.js` – Google OAuth start and return (state cookie check)
 - `app/api/logo/route.js` + `lib/logo.js` – Public website icon for a site already saved in `sites` (fetched server-side, cached)
@@ -29,11 +30,11 @@ Originally generated with Figma Make (Vite), now migrated to **Next.js (App Rout
 - `lib/supabase/server.js` – Supabase client for server code (cookie-based session)
 - `lib/supabase/admin.js` – Server-only Supabase client with the secret key (bypasses RLS; check the user first)
 - `lib/google.js` – Server-only Google OAuth + Search Console API helpers and stored connections
-- `lib/traffic.js` – Syncs daily Search Console traffic into `site_traffic_daily` (when older than 6h, via `after()`) and loads 90-day series for the public page
+- `lib/traffic.js` – Syncs daily Search Console traffic into `site_traffic_daily` (when older than 6h; the public page waits for that sync) and loads a 12-month series
 - `lib/encryption.js` – AES-256-GCM encryption for Google refresh tokens (`TOKEN_ENCRYPTION_KEY`)
 - `supabase/migrations/` – SQL run manually in the Supabase SQL Editor
 - `lib/supabase/proxy.js` + `proxy.js` – Refreshes the session on each request; redirects for protected/auth pages
-- `components/AnalyticsCard.js` – Website traffic card (`name`, `days`) with clicks/impressions Chart.js chart and 28/90-day toggle
+- `components/AnalyticsCard.js` – Website traffic card (`name`, `days`) with clicks/impressions Chart.js chart and 28d/90d/6m/12m toggle
 - `public/` – Static images
 
 ## Stack

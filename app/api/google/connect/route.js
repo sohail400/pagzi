@@ -1,10 +1,10 @@
 import { randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/auth";
+import { requireFullAccess } from "@/lib/payments";
 import { STATE_COOKIE, googleAuthUrl, isGoogleConfigured } from "@/lib/google";
 
 export async function GET(request) {
-  await requireUser();
+  await requireFullAccess();
 
   if (!isGoogleConfigured()) {
     return NextResponse.redirect(new URL("/sites?google=not_configured", request.url));

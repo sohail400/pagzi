@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { startTransition, useActionState, useEffect, useRef, useState } from "react";
 import Avatar from "@/components/Avatar";
+import PagePhone from "@/components/PagePhone";
 import SocialLinks from "@/components/SocialLinks";
 import { LIMITS, SOCIAL_LINKS, socialLinksOf } from "@/lib/profile";
+import { STYLE_DEFAULTS } from "@/lib/style";
 import { updateProfile } from "./actions";
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
@@ -18,7 +20,8 @@ function toFormValues(profile) {
     location: profile.location ?? "",
   };
   SOCIAL_LINKS.forEach((link) => {
-    values[link.key] = profile[link.key] ?? "";
+    const raw = profile[link.key] ?? "";
+    values[link.key] = link.kind === "email" ? raw.replace(/^mailto:/i, "") : raw;
   });
   return values;
 }
@@ -88,32 +91,32 @@ export default function ProfileForm({ profile, siteUrl }) {
 
   return (
     <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-      <div className="card rounded-3xl border border-stone-200 bg-white shadow-[0_10px_35px_rgba(28,25,23,0.05)]">
+      <div className="card rounded-3xl border border-white/10 bg-[#1F1F1F]">
         <div className="card-body gap-0 p-5 sm:p-7">
-          <div className="flex items-center justify-between border-b border-stone-100 pb-5">
+          <div className="flex items-center justify-between border-b border-white/10 pb-5">
             <div>
-              <p className="text-lg font-bold text-stone-900">Profile</p>
-              <p className="mt-1 text-sm text-stone-500">Your public details and social links.</p>
+              <p className="text-lg font-bold text-white">Profile</p>
+              <p className="mt-1 text-sm text-stone-400">Your public details and social links.</p>
             </div>
             {savedUsername ? (
               <span className="badge badge-outline badge-sm border-emerald-300 text-emerald-700">Published</span>
             ) : (
-              <span className="badge badge-outline badge-sm border-stone-300 text-stone-500">Not published</span>
+              <span className="badge badge-outline badge-sm border-white/20 text-stone-300">Not published</span>
             )}
           </div>
 
           <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
             <div>
-              <p className="mb-3 text-sm font-semibold text-stone-700">Profile photo</p>
+              <p className="mb-3 text-sm font-semibold text-stone-200">Profile photo</p>
               <div className="flex flex-wrap items-center gap-4">
-                <Avatar src={avatarPreview} name={values.name} className="w-16 ring-2 ring-amber-200" />
+                <Avatar src={avatarPreview} name={values.name} className="w-16" />
                 <input
                   ref={fileInputRef}
                   type="file"
                   name="avatar"
                   accept="image/jpeg,image/png,image/webp"
                   onChange={handlePhotoChange}
-                  className="file-input file-input-bordered file-input-sm w-full max-w-xs rounded-xl border-stone-300 bg-white"
+                  className="file-input file-input-bordered file-input-sm w-full max-w-xs rounded-xl border-white/15 bg-[#1F1F1F]"
                 />
               </div>
               <p className={`pt-2 text-xs ${photoError ? "text-red-600" : "text-stone-400"}`}>
@@ -123,7 +126,7 @@ export default function ProfileForm({ profile, siteUrl }) {
 
             <div className="grid gap-5 sm:grid-cols-2">
               <fieldset className="fieldset p-0">
-                <legend className="fieldset-legend pb-2 text-sm font-semibold text-stone-700">Name</legend>
+                <legend className="fieldset-legend pb-2 text-sm font-semibold text-stone-200">Name</legend>
                 <input
                   type="text"
                   name="name"
@@ -131,13 +134,13 @@ export default function ProfileForm({ profile, siteUrl }) {
                   maxLength={LIMITS.name}
                   value={values.name}
                   onChange={(event) => update("name", event.target.value)}
-                  className="input h-11 w-full rounded-xl border-stone-300 bg-white px-4 focus:border-stone-700 focus:outline-none"
+                  className="input h-11 w-full rounded-xl border-white/15 bg-[#1F1F1F] px-4 focus:border-stone-700 focus:outline-none"
                 />
               </fieldset>
               <fieldset className="fieldset p-0">
-                <legend className="fieldset-legend pb-2 text-sm font-semibold text-stone-700">Username</legend>
-                <label className="input h-11 w-full rounded-xl border-stone-300 bg-white focus-within:border-stone-700 focus-within:outline-none">
-                  <span className="label text-stone-400">indie.site/</span>
+                <legend className="fieldset-legend pb-2 text-sm font-semibold text-stone-200">Username</legend>
+                <label className="input h-11 w-full rounded-xl border-white/15 bg-[#1F1F1F] focus-within:border-stone-700 focus-within:outline-none">
+                  <span className="label text-stone-400">pagzi.online/</span>
                   <input
                     type="text"
                     name="username"
@@ -159,14 +162,14 @@ export default function ProfileForm({ profile, siteUrl }) {
             </div>
 
             <fieldset className="fieldset p-0">
-              <legend className="fieldset-legend pb-2 text-sm font-semibold text-stone-700">Bio</legend>
+              <legend className="fieldset-legend pb-2 text-sm font-semibold text-stone-200">Bio</legend>
               <textarea
                 name="bio"
                 rows={4}
                 maxLength={LIMITS.bio}
                 value={values.bio}
                 onChange={(event) => update("bio", event.target.value)}
-                className="textarea w-full resize-none rounded-xl border-stone-300 bg-white px-4 py-3 leading-6 focus:border-stone-700 focus:outline-none"
+                className="textarea w-full resize-none rounded-xl border-white/15 bg-[#1F1F1F] px-4 py-3 leading-6 focus:border-stone-700 focus:outline-none"
               />
               <p className="fieldset-label pt-2 text-xs text-stone-400">
                 A short introduction for your page. {values.bio.length}/{LIMITS.bio}
@@ -174,30 +177,30 @@ export default function ProfileForm({ profile, siteUrl }) {
             </fieldset>
 
             <fieldset className="fieldset p-0">
-              <legend className="fieldset-legend pb-2 text-sm font-semibold text-stone-700">Location</legend>
+              <legend className="fieldset-legend pb-2 text-sm font-semibold text-stone-200">Location</legend>
               <input
                 type="text"
                 name="location"
                 maxLength={LIMITS.location}
                 value={values.location}
                 onChange={(event) => update("location", event.target.value)}
-                className="input h-11 w-full rounded-xl border-stone-300 bg-white px-4 focus:border-stone-700 focus:outline-none"
+                className="input h-11 w-full rounded-xl border-white/15 bg-[#1F1F1F] px-4 focus:border-stone-700 focus:outline-none"
               />
             </fieldset>
 
             <div>
-              <p className="text-sm font-semibold text-stone-700">Social links</p>
+              <p className="text-sm font-semibold text-stone-200">Social links</p>
               <p className="mt-1 text-xs text-stone-400">Add the profiles you want visitors to find.</p>
               <div className="mt-3 grid gap-3">
                 {SOCIAL_LINKS.map((link) => (
                   <label
                     key={link.key}
-                    className="input h-11 w-full rounded-xl border-stone-300 bg-white focus-within:border-stone-700 focus-within:outline-none"
+                    className="input h-11 w-full rounded-xl border-white/15 bg-[#1F1F1F] focus-within:border-stone-700 focus-within:outline-none"
                   >
-                    <span className="label w-20 text-stone-500">{link.label}</span>
+                    <span className="label w-20 text-stone-400">{link.label}</span>
                     <input
                       type="text"
-                      inputMode="url"
+                      inputMode={link.kind === "email" ? "email" : "url"}
                       name={link.key}
                       autoCapitalize="none"
                       spellCheck={false}
@@ -213,27 +216,27 @@ export default function ProfileForm({ profile, siteUrl }) {
             </div>
 
             <fieldset className="fieldset p-0">
-              <legend className="fieldset-legend pb-2 text-sm font-semibold text-stone-700">Public page URL</legend>
+              <legend className="fieldset-legend pb-2 text-sm font-semibold text-stone-200">Public page URL</legend>
               <div className="join w-full">
                 <input
                   type="text"
                   readOnly
                   value={publicUrl}
                   aria-label="Public page URL"
-                  className="input join-item h-11 w-full rounded-l-xl border-stone-300 bg-stone-50 px-4 text-stone-500 focus:outline-none"
+                  className="input join-item h-11 w-full rounded-l-xl border-white/15 bg-[#1F1F1F] px-4 text-stone-400 focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={copyPublicUrl}
                   disabled={!savedUsername}
-                  className="btn join-item h-11 rounded-r-xl border-stone-300 bg-white px-5 text-stone-700 shadow-none hover:bg-stone-50"
+                  className="btn join-item h-11 rounded-r-xl border-white/15 bg-[#161616] px-5 text-stone-100 shadow-none hover:bg-white/10"
                 >
                   {copied ? "Copied" : "Copy"}
                 </button>
               </div>
             </fieldset>
 
-            <div className="flex flex-wrap items-center justify-end gap-4 border-t border-stone-100 pt-5">
+            <div className="flex flex-wrap items-center justify-end gap-4 border-t border-white/10 pt-5">
               {state?.error && (
                 <p role="alert" className="mr-auto text-sm text-red-600">
                   {state.error}
@@ -247,7 +250,7 @@ export default function ProfileForm({ profile, siteUrl }) {
               <button
                 type="submit"
                 disabled={pending}
-                className="btn h-11 rounded-full border-stone-900 bg-stone-900 px-6 font-semibold text-white shadow-none hover:border-stone-800 hover:bg-stone-800 disabled:border-stone-700 disabled:bg-stone-700 disabled:text-white"
+                className="btn btn-save h-11 rounded-xl border-0 px-6 font-semibold text-white shadow-none"
               >
                 {pending ? "Saving…" : "Save changes"}
               </button>
@@ -258,22 +261,29 @@ export default function ProfileForm({ profile, siteUrl }) {
 
       <div className="xl:sticky xl:top-8">
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-sm font-semibold text-stone-700">Page preview</p>
+          <p className="text-sm font-semibold text-stone-200">Page preview</p>
           <span className="text-xs text-stone-400">Live</span>
         </div>
-        <div className="card overflow-hidden rounded-3xl border border-stone-200 bg-[#f5f0e8] shadow-[0_12px_40px_rgba(28,25,23,0.08)]">
-          <div className="card-body p-5">
-            <Avatar src={avatarPreview} name={values.name} className="w-16 ring-2 ring-amber-200" />
-            <p className="mt-1 text-xl font-bold tracking-tight text-stone-900">{values.name || "Your name"}</p>
-            {values.location && <p className="text-xs text-stone-500">{values.location}</p>}
-            {values.bio && <p className="mt-2 whitespace-pre-line break-words text-xs leading-5 text-stone-600">{values.bio}</p>}
-            <SocialLinks links={previewLinks} size="sm" className="mt-2" />
-          </div>
-        </div>
+        <PagePhone
+          profile={{
+            avatarUrl: avatarPreview,
+            name: values.name || "Your name",
+            location: values.location,
+            bio: values.bio,
+            links: previewLinks,
+          }}
+          page={profile.page_color || STYLE_DEFAULTS.page}
+          text={profile.text_color || STYLE_DEFAULTS.text}
+          share={profile.share_color || STYLE_DEFAULTS.share}
+          font={profile.font_style || STYLE_DEFAULTS.font}
+          clicks={profile.chart_clicks || STYLE_DEFAULTS.chartClicks}
+          impressions={profile.chart_impressions || STYLE_DEFAULTS.chartImpressions}
+          card={profile.card_color || STYLE_DEFAULTS.card}
+        />
         {savedUsername ? (
           <Link
             href={`/${savedUsername}`}
-            className="btn mt-4 h-11 w-full rounded-full border-stone-300 bg-white font-semibold text-stone-800 shadow-none hover:border-stone-400 hover:bg-stone-50"
+            className="btn mt-4 h-11 w-full rounded-full border-white/15 bg-[#161616] font-semibold text-stone-100 shadow-none hover:bg-white/10"
           >
             View my page
           </Link>

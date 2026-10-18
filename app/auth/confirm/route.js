@@ -14,7 +14,7 @@ export async function GET(request) {
       ? await supabase.auth.exchangeCodeForSession(code)
       : await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
 
-    if (!error) redirect("/admin");
+    if (!error) redirect(searchParams.get("next") === "/reset-password" || type === "recovery" ? "/reset-password" : "/admin");
     redirect("/login?error=confirm_failed");
   }
 

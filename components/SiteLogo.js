@@ -2,23 +2,17 @@
 
 import { useState } from "react";
 
-export default function SiteLogo({ name, className = "h-7 w-7 rounded-lg" }) {
+export default function SiteLogo({ name, logoUrl, className = "h-7 w-7 rounded-lg" }) {
   const [failed, setFailed] = useState(false);
-  const domain = name.split("/")[0].toLowerCase();
 
   return (
     <span
       className={`flex shrink-0 items-center justify-center overflow-hidden border border-stone-200 bg-white ${className}`}
     >
-      {failed ? (
-        <span className="text-xs font-bold uppercase text-stone-500">{name.charAt(0)}</span>
+      {logoUrl && !failed ? (
+        <img src={logoUrl} alt="" className="h-full w-full object-cover" onError={() => setFailed(true)} />
       ) : (
-        <img
-          src={`/api/logo?domain=${encodeURIComponent(domain)}`}
-          alt=""
-          className="h-full w-full object-contain"
-          onError={() => setFailed(true)}
-        />
+        <span className="text-xs font-bold uppercase text-stone-500">{(name || "?").charAt(0)}</span>
       )}
     </span>
   );

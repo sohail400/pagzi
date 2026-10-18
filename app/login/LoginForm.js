@@ -1,6 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
+import Link from "next/link";
+import PasswordField from "@/components/PasswordField";
 import { login } from "@/app/auth/actions";
 
 export default function LoginForm({ notice }) {
@@ -16,7 +18,7 @@ export default function LoginForm({ notice }) {
       )}
 
       <fieldset className="fieldset p-0">
-        <legend className="fieldset-legend pb-2 text-sm font-semibold text-stone-700">Email address</legend>
+        <legend className="fieldset-legend pb-2 text-sm font-semibold text-stone-200">Email address</legend>
         <input
           type="email"
           name="email"
@@ -24,27 +26,22 @@ export default function LoginForm({ notice }) {
           required
           defaultValue={state?.values?.email}
           placeholder="you@example.com"
-          className="input h-12 w-full rounded-xl border-stone-300 bg-white px-4 text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-700 focus:outline-none"
+          className="input h-12 w-full rounded-xl border-white/15 bg-[#1F1F1F] px-4 text-stone-100 outline-none placeholder:text-stone-500 focus:border-stone-400 focus:outline-none"
         />
       </fieldset>
 
       <fieldset className="fieldset p-0">
         <div className="flex items-center justify-between pb-2">
-          <legend className="fieldset-legend p-0 text-sm font-semibold text-stone-700">Password</legend>
-          <a
-            href="mailto:hello@indie.site?subject=Password reset"
-            className="link text-xs font-semibold text-stone-500 hover:text-stone-900"
-          >
+          <legend className="fieldset-legend p-0 text-sm font-semibold text-stone-200">Password</legend>
+          <Link href="/forgot-password" className="link text-xs font-semibold text-stone-400 hover:text-white">
             Forgot password?
-          </a>
+          </Link>
         </div>
-        <input
-          type="password"
+        <PasswordField
           name="password"
           autoComplete="current-password"
           required
           placeholder="Enter your password"
-          className="input h-12 w-full rounded-xl border-stone-300 bg-white px-4 text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-700 focus:outline-none"
         />
       </fieldset>
 
