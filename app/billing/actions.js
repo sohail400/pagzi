@@ -3,8 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
-import { INTRO_PRICE_LIMIT, isBuilderAccount } from "@/lib/payments";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { earlySpotCount, isBuilderAccount } from "@/lib/payments";
 
 function dodoConfig() {
   const apiKey = process.env.DODO_PAYMENTS_API_KEY || "";
@@ -29,13 +28,15 @@ export async function startCheckout() {
   if (isBuilderAccount(profile.data?.username)) redirect("/settings?checkout=builder");
   if (profile.data?.paid_at) redirect("/settings?checkout=paid");
 
-  const admin = createAdminClient();
-  const counted = await admin.from("profiles").select("id", { count: "exact", head: true }).not("paid_at", "is", null);
-  if (counted.error) {
+  let spots;
+  try {
+    spots = await earlySpotCount();
+  } catch (error) {
+    console.error("Counting Early spots failed:", error);
     return { error: "Billing is not ready yet. Run the payments database update, then try again." };
   }
-  if ((counted.count ?? 0) >= INTRO_PRICE_LIMIT) {
-    return { error: "The $9 price is closed. The first 30 pages are already paid." };
+  if (spots.soldOut) {
+    return { error: "The $9 Early price is sold out." };
   }
 
   const headerStore = await headers();

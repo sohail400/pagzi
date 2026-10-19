@@ -3,12 +3,11 @@ import AnalyticsCard from "@/components/AnalyticsCard";
 import BrandMark from "@/components/BrandMark";
 import LandingClaim from "@/components/LandingClaim";
 import LandingPreview from "@/components/LandingPreview";
-import PayButton from "@/components/PayButton";
 import ProductDemo from "@/components/ProductDemo";
 import ShowcaseWall from "@/components/ShowcaseWall";
 import SiteFooter from "@/components/SiteFooter";
 import StyleDemo from "@/components/StyleDemo";
-import { isBuilderAccount } from "@/lib/payments";
+import { EARLY_SPOT_LIMIT, earlySpotCount } from "@/lib/payments";
 import { PROFILE_COLUMNS, socialLinksOf } from "@/lib/profile";
 import { inkFor, STYLE_DEFAULTS } from "@/lib/style";
 import { createClient } from "@/lib/supabase/server";
@@ -20,13 +19,49 @@ const PINK_BUTTON =
   "btn btn-save h-12 w-full rounded-xl border-0 px-7 font-semibold text-white shadow-none sm:w-auto";
 
 const FEATURES = [
-  ["Show growth with ", "Search Console"],
-  ["Build trust with ", "real clicks"],
-  ["Customizable ", "charts and colors"],
-  ["Custom domain"],
-  ["Search engines follow your ", "links"],
-  ["24 themes and 13 fonts"],
+  "Build trust with verified Google Search Console data",
+  "Get a dofollow backlink to your website",
+  "Updates automatically",
+  "Share your indie hacking journey",
+  "Customize your charts, colors and fonts",
+  "Use your own custom domain",
+  "24 themes and 13 fonts",
 ];
+
+const PLANS = [
+  {
+    id: "early",
+    name: "Early",
+    price: 9,
+    detail: "Lifetime. First 20 spots only.",
+    limited: true,
+  },
+  {
+    id: "year",
+    name: "1-Year Pass",
+    price: 19,
+    detail: "One year. No auto-renew.",
+  },
+  {
+    id: "lifetime",
+    name: "Lifetime Deal",
+    price: 29,
+    detail: "Pay once. Keep your page.",
+  },
+];
+
+function featureParts(line) {
+  const parts = [];
+  const pattern = /\*\*(.+?)\*\*/g;
+  let last = 0;
+  for (const match of line.matchAll(pattern)) {
+    if (match.index > last) parts.push({ text: line.slice(last, match.index), bold: false });
+    parts.push({ text: match[1], bold: true });
+    last = match.index + match[0].length;
+  }
+  if (last < line.length) parts.push({ text: line.slice(last), bold: false });
+  return parts;
+}
 
 function sampleDays() {
   return Array.from({ length: 365 }, (_, index) => {
@@ -121,17 +156,12 @@ async function loadShowcase() {
   }
 }
 
-async function loadViewer() {
+async function loadEarlySpots() {
   try {
-    const supabase = await createClient();
-    const { data } = await supabase.auth.getClaims();
-    if (!data?.claims?.sub) return { signedIn: false, paid: false, builder: false };
-    const profile = await supabase.from("profiles").select("username, paid_at").eq("id", data.claims.sub).maybeSingle();
-    const builder = isBuilderAccount(profile.data?.username);
-    return { signedIn: true, paid: Boolean(profile.data?.paid_at) || builder, builder };
+    return await earlySpotCount();
   } catch (error) {
-    console.error("Landing viewer failed:", error);
-    return { signedIn: false, paid: false, builder: false };
+    console.error("Early spot count failed:", error?.code, error?.message, error?.details, error?.hint);
+    return { left: EARLY_SPOT_LIMIT, soldOut: false };
   }
 }
 
@@ -152,7 +182,7 @@ function Check() {
 
 export default async function LandingPage() {
   const showcase = await loadShowcase();
-  const viewer = await loadViewer();
+  const early = await loadEarlySpots();
 
   return (
     <div className="min-h-screen bg-[#1F1F1F] font-sans text-stone-100">
@@ -318,38 +348,66 @@ export default async function LandingPage() {
               One page. One price.
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-center text-base leading-7 text-stone-300">
-              $9 once for the first 30 people. No subscription.
+              No subscription.
             </p>
-            <div className="mt-12 grid items-stretch gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-              <div className="order-2 rounded-[2rem] bg-[#2A2A2A] p-7 sm:p-9 lg:order-1">
-                <p className="text-2xl font-bold tracking-tight text-white">What you get</p>
-                <ul className="mt-6 space-y-3">
-                  {FEATURES.map(([text, emphasis]) => (
-                    <li key={text + (emphasis || "")} className="flex items-start gap-3 text-base leading-7 text-stone-200">
-                      <Check />
-                      <span>
-                        {text}
-                        {emphasis && <span className="font-semibold text-white underline decoration-white/40 underline-offset-4">{emphasis}</span>}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="order-1 flex flex-col rounded-[2rem] border border-[#ff4fa3] bg-[#1F1F1F] p-7 sm:p-9 lg:order-2">
-                <p className="text-sm font-semibold uppercase tracking-wider text-[#ff4fa3]">First 30 users</p>
-                <p className="mt-4 text-6xl font-bold tracking-[-0.05em] text-white">$9</p>
-                <p className="mt-3 text-sm font-medium leading-6 text-white">One-time payment, no subscription.</p>
-                <p className="mt-2 text-sm leading-6 text-stone-400">
-                  This price is only for the first 30 people. After that, it goes up. Pay once and the page stays yours.
-                </p>
-                {viewer.signedIn ? (
-                  <PayButton paid={viewer.paid} complimentary={viewer.builder} className={`${PINK_BUTTON} mt-8 w-full`} />
-                ) : (
-                  <Link href="/signup" className={`${PINK_BUTTON} mt-8 w-full`}>
-                    Create your page
-                  </Link>
-                )}
-              </div>
+            <div className="mt-12 grid items-stretch gap-4 lg:grid-cols-3">
+              {PLANS.map((plan) => {
+                const soldOut = plan.id === "early" && early.soldOut;
+                return (
+                  <div
+                    key={plan.id}
+                    className={`flex h-full flex-col rounded-[2rem] bg-[#1F1F1F] p-7 sm:p-9 ${plan.limited ? "border border-[#ff4fa3]" : "border border-white/10"}`}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm font-semibold uppercase tracking-wider text-[#ff4fa3]">{plan.name}</p>
+                      {plan.limited && (
+                        <span className="rounded-full border border-[#ff4fa3] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#ff4fa3]">
+                          Limited
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-4 text-6xl font-bold tracking-[-0.05em] text-white">${plan.price}</p>
+                    <p className="mt-3 text-sm font-medium leading-6 text-white">{plan.detail}</p>
+                    {plan.id === "early" && (
+                      <p className="mt-2 text-sm leading-6 text-stone-400">
+                        {soldOut ? "Sold out" : `${early.left} of ${EARLY_SPOT_LIMIT} spots left`}
+                      </p>
+                    )}
+                    <div className="mt-auto pt-8">
+                      {soldOut ? (
+                        <button type="button" disabled className="btn btn-save h-12 w-full cursor-not-allowed rounded-xl border-0 px-7 font-semibold text-white shadow-none">
+                          Get my page
+                        </button>
+                      ) : (
+                        <Link href="/signup" className="btn btn-save h-12 w-full rounded-xl border-0 px-7 font-semibold text-white shadow-none">
+                          Get my page
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-6 rounded-[2rem] bg-[#2A2A2A] p-7 sm:p-9">
+              <p className="text-2xl font-bold tracking-tight text-white">What you get</p>
+              <ul className="mt-6 space-y-3">
+                {FEATURES.map((line) => (
+                  <li key={line} className="flex items-start gap-3 text-base leading-7 text-stone-200">
+                    <Check />
+                    <span>
+                      {featureParts(line).map((part) =>
+                        part.bold ? (
+                          <span key={part.text} className="font-semibold text-white underline decoration-white/40 underline-offset-4">
+                            {part.text}
+                          </span>
+                        ) : (
+                          part.text
+                        )
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </section>
