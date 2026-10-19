@@ -89,7 +89,7 @@ export default function StyleEditor({ saved, sites }) {
                   type="color"
                   value={normalizeHex(clicks) || "#2563EB"}
                   onChange={(event) => setClicks(event.target.value.toUpperCase())}
-                  className="h-10 w-full cursor-pointer rounded-xl border border-stone-300 bg-white p-1"
+                  className="color-bar h-10 w-full cursor-pointer rounded-xl border border-stone-300"
                 />
               </label>
               <label className="block">
@@ -98,7 +98,7 @@ export default function StyleEditor({ saved, sites }) {
                   type="color"
                   value={normalizeHex(impressions) || "#F97316"}
                   onChange={(event) => setImpressions(event.target.value.toUpperCase())}
-                  className="h-10 w-full cursor-pointer rounded-xl border border-stone-300 bg-white p-1"
+                  className="color-bar h-10 w-full cursor-pointer rounded-xl border border-stone-300"
                 />
               </label>
             </div>

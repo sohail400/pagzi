@@ -79,6 +79,21 @@ html {
   background-color: #ff96c6;
 }
 
+.color-bar {
+  padding: 0;
+  background: #fff;
+}
+
+.color-bar::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.color-bar::-webkit-color-swatch,
+.color-bar::-moz-color-swatch {
+  border: 0;
+  border-radius: 0.65rem;
+}
+
 @keyframes preview-in {
   from {
     opacity: 0.55;
