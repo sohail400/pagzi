@@ -474,29 +474,29 @@ export default function AnalyticsCard({
         transition: demo ? "transform 680ms cubic-bezier(0.22, 1, 0.36, 1)" : undefined,
       }}
     >
-      <div className={`flex min-w-0 ${compact ? "flex-wrap items-start gap-2" : mobileCompact ? "flex-nowrap items-center gap-1.5 lg:flex-wrap lg:items-start lg:gap-3" : "flex-wrap items-start gap-3"} ${anonymous ? "justify-end" : ""}`}>
+      <div className={`min-w-0 ${compact ? "flex flex-wrap items-start gap-2" : anonymous ? "flex flex-wrap items-start justify-end gap-3" : mobileCompact ? "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-1.5 gap-y-1 lg:flex lg:flex-wrap lg:items-start lg:gap-3" : "flex flex-wrap items-start gap-3"}`}>
         {!anonymous && (
           <>
             <SiteLogo
               name={name}
               logoUrl={logoUrl}
-              className={`${compact ? "h-7 w-7" : mobileCompact ? "h-6 w-6 lg:h-8 lg:w-8" : "h-8 w-8"} shrink-0 rounded-lg`}
+              className={`${compact ? "h-7 w-7" : mobileCompact ? "col-start-1 row-start-1 h-6 w-6 lg:h-8 lg:w-8" : "h-8 w-8"} shrink-0 rounded-lg`}
             />
-            <div className={`min-w-0 flex-1 ${compact ? "space-y-0.5" : mobileCompact ? "flex items-baseline gap-1.5 lg:block lg:space-y-1.5" : "space-y-1.5"}`}>
+            <div className={compact ? "min-w-0 flex-1 space-y-0.5" : mobileCompact ? "contents lg:block lg:min-w-0 lg:flex-1 lg:space-y-1.5" : "min-w-0 flex-1 space-y-1.5"}>
               {siteUrl ? (
                 <a
                   href={siteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`truncate font-semibold leading-none underline-offset-2 hover:underline ${compact ? "block text-[13px]" : mobileCompact ? "max-w-[7.5rem] shrink-0 text-[12px] lg:block lg:max-w-none lg:shrink lg:text-sm" : "block text-sm"} ${darkCard ? "text-white" : "text-stone-800"}`}
+                  className={`truncate font-semibold leading-none underline-offset-2 hover:underline ${compact ? "block text-[13px]" : mobileCompact ? "col-start-2 row-start-1 min-w-0 text-[12px] lg:text-sm" : "block text-sm"} ${darkCard ? "text-white" : "text-stone-800"}`}
                 >
                   {name}
                 </a>
               ) : (
-                <p className={`truncate font-semibold leading-none ${compact ? "text-[13px]" : mobileCompact ? "max-w-[7.5rem] shrink-0 text-[12px] lg:max-w-none lg:shrink lg:text-sm" : "text-sm"} ${darkCard ? "text-white" : "text-stone-800"}`}>{name}</p>
+                <p className={`truncate font-semibold leading-none ${compact ? "text-[13px]" : mobileCompact ? "col-start-2 row-start-1 min-w-0 text-[12px] lg:text-sm" : "text-sm"} ${darkCard ? "text-white" : "text-stone-800"}`}>{name}</p>
               )}
               {description && (
-                <p className={`min-w-0 truncate leading-none ${mobileCompact ? "flex-1 text-[10px] lg:text-[11px] lg:leading-snug" : "text-[11px] leading-snug"} ${darkCard ? "text-stone-300" : "text-stone-500"}`}>
+                <p className={`min-w-0 truncate text-[11px] leading-snug ${mobileCompact ? "col-span-2 col-start-2 row-start-2" : ""} ${darkCard ? "text-stone-300" : "text-stone-500"}`}>
                   {description}
                 </p>
               )}
@@ -510,7 +510,7 @@ export default function AnalyticsCard({
         )}
         {!compact && (
           <div
-            className={`join shrink-0 rounded-full border-0 ${mobileCompact ? "p-px lg:p-0.5" : "p-0.5"} ${darkCard ? "bg-[#161616]" : "bg-white"}`}
+            className={`join shrink-0 rounded-full border-0 ${mobileCompact ? "col-start-3 row-start-1 p-px lg:p-0.5" : "p-0.5"} ${darkCard ? "bg-[#161616]" : "bg-white"}`}
             role="group"
             aria-label="Date range"
           >
