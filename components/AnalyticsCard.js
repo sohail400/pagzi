@@ -474,7 +474,7 @@ export default function AnalyticsCard({
         transition: demo ? "transform 680ms cubic-bezier(0.22, 1, 0.36, 1)" : undefined,
       }}
     >
-      <div className={`min-w-0 ${compact ? "flex flex-wrap items-start gap-2" : anonymous ? "flex flex-wrap items-start justify-end gap-3" : mobileCompact ? "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-1.5 gap-y-1 lg:flex lg:flex-wrap lg:items-start lg:gap-3" : "flex flex-wrap items-start gap-3"}`}>
+      <div className={`min-w-0 ${compact ? "flex flex-wrap items-start gap-2" : anonymous ? "flex flex-wrap items-start justify-end gap-3" : mobileCompact ? "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-1.5 gap-y-0 lg:flex lg:flex-wrap lg:items-start lg:gap-3" : "flex flex-wrap items-start gap-3"}`}>
         {!anonymous && (
           <>
             <SiteLogo
@@ -488,15 +488,15 @@ export default function AnalyticsCard({
                   href={siteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`truncate font-semibold leading-none underline-offset-2 hover:underline ${compact ? "block text-[13px]" : mobileCompact ? "col-start-2 row-start-1 min-w-0 text-[12px] lg:text-sm" : "block text-sm"} ${darkCard ? "text-white" : "text-stone-800"}`}
+                  className={`truncate font-semibold leading-none underline-offset-2 hover:underline ${compact ? "block text-[13px]" : mobileCompact ? "col-start-2 row-start-1 min-w-0 text-[12px] lg:block lg:text-sm" : "block text-sm"} ${darkCard ? "text-white" : "text-stone-800"}`}
                 >
                   {name}
                 </a>
               ) : (
-                <p className={`truncate font-semibold leading-none ${compact ? "text-[13px]" : mobileCompact ? "col-start-2 row-start-1 min-w-0 text-[12px] lg:text-sm" : "text-sm"} ${darkCard ? "text-white" : "text-stone-800"}`}>{name}</p>
+                <p className={`truncate font-semibold leading-none ${compact ? "block text-[13px]" : mobileCompact ? "col-start-2 row-start-1 min-w-0 text-[12px] lg:block lg:text-sm" : "block text-sm"} ${darkCard ? "text-white" : "text-stone-800"}`}>{name}</p>
               )}
               {description && (
-                <p className={`min-w-0 truncate text-[11px] leading-snug ${mobileCompact ? "col-span-2 col-start-2 row-start-2" : ""} ${darkCard ? "text-stone-300" : "text-stone-500"}`}>
+                <p className={`min-w-0 truncate text-[11px] leading-snug ${mobileCompact ? "col-span-2 col-start-2 row-start-2 max-lg:leading-none" : ""} ${darkCard ? "text-stone-300" : "text-stone-500"}`}>
                   {description}
                 </p>
               )}
