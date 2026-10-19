@@ -466,7 +466,7 @@ export default function AnalyticsCard({
         compact
           ? "rounded-2xl px-3 pb-2.5 pt-3"
           : mobileCompact
-            ? "rounded-2xl px-3 pb-2.5 pt-3 lg:rounded-[1.4rem] lg:px-4 lg:pb-3 lg:pt-4"
+            ? "rounded-3xl px-4 pb-3.5 pt-4 lg:rounded-[1.4rem] lg:px-4 lg:pb-3 lg:pt-4"
             : "rounded-[1.4rem] px-4 pb-3 pt-4"
       }`}
       style={{
@@ -483,7 +483,7 @@ export default function AnalyticsCard({
             <SiteLogo
               name={name}
               logoUrl={logoUrl}
-              className={`${compact ? "h-7 w-7" : mobileCompact ? "col-start-1 row-start-1 h-6 w-6 lg:h-8 lg:w-8" : "h-8 w-8"} shrink-0 rounded-lg`}
+              className={`${compact ? "h-7 w-7" : mobileCompact ? "col-start-1 row-start-1 h-7 w-7 lg:h-8 lg:w-8" : "h-8 w-8"} shrink-0 rounded-lg`}
             />
             <div className={compact ? "min-w-0 flex-1 space-y-0.5" : mobileCompact ? "contents lg:block lg:min-w-0 lg:flex-1 lg:space-y-1.5" : "min-w-0 flex-1 space-y-1.5"}>
               {siteUrl ? (
@@ -491,15 +491,15 @@ export default function AnalyticsCard({
                   href={siteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`truncate font-semibold leading-none underline-offset-2 hover:underline ${compact ? "block text-[13px]" : mobileCompact ? "col-start-2 row-start-1 min-w-0 text-[12px] lg:block lg:text-sm" : "block text-sm"} ${darkCard ? "text-white" : "text-stone-800"}`}
+                  className={`truncate font-semibold leading-none underline-offset-2 hover:underline ${compact ? "block text-[13px]" : mobileCompact ? "col-start-2 row-start-1 min-w-0 text-sm lg:block" : "block text-sm"} ${darkCard ? "text-white" : "text-stone-800"}`}
                 >
                   {name}
                 </a>
               ) : (
-                <p className={`truncate font-semibold leading-none ${compact ? "block text-[13px]" : mobileCompact ? "col-start-2 row-start-1 min-w-0 text-[12px] lg:block lg:text-sm" : "block text-sm"} ${darkCard ? "text-white" : "text-stone-800"}`}>{name}</p>
+                <p className={`truncate font-semibold leading-none ${compact ? "block text-[13px]" : mobileCompact ? "col-start-2 row-start-1 min-w-0 text-sm lg:block" : "block text-sm"} ${darkCard ? "text-white" : "text-stone-800"}`}>{name}</p>
               )}
               {description && (
-                <p className={`min-w-0 truncate text-[11px] leading-snug ${mobileCompact ? "col-span-2 col-start-2 row-start-2 max-lg:-mt-1 max-lg:leading-none" : ""} ${darkCard ? "text-stone-300" : "text-stone-500"}`}>
+                <p className={`min-w-0 truncate leading-snug ${mobileCompact ? "col-span-2 col-start-2 row-start-2 text-xs max-lg:-mt-0.5 max-lg:leading-none lg:text-[11px]" : "text-[11px]"} ${darkCard ? "text-stone-300" : "text-stone-500"}`}>
                   {description}
                 </p>
               )}
@@ -546,7 +546,7 @@ export default function AnalyticsCard({
         )}
       </div>
 
-      <div className={compact ? "mt-2 h-20" : mobileCompact ? "mt-2 h-20 lg:mt-3 lg:h-32" : "mt-3 h-32"}>
+      <div className={compact ? "mt-2 h-20" : mobileCompact ? "mt-3 h-28 lg:mt-3 lg:h-32" : "mt-3 h-32"}>
         <div className="relative h-full w-full">
           <canvas ref={canvasRef} aria-label="Clicks and impressions over time" role="img" />
           {tooltip && <ChartTooltip tooltip={tooltip} />}

@@ -13,7 +13,7 @@ function Icon({ children }) {
   );
 }
 
-export default function ShareButton({ username, title, color = "#E7E5E4", href }) {
+export default function ShareButton({ username, title, color = "#E7E5E4", href, className = "" }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const ink = isDarkHex(color) ? "#ffffff" : "#1c1917";
@@ -122,7 +122,7 @@ export default function ShareButton({ username, title, color = "#E7E5E4", href }
         onClick={() => setOpen(true)}
         aria-label="Share page"
         aria-haspopup="dialog"
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-sm"
+        className={className || "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-sm"}
         style={{ backgroundColor: color, color: ink }}
       >
         <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 fill-none stroke-current stroke-2">

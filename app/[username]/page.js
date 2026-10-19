@@ -76,38 +76,38 @@ export default async function ProfilePage({ params }) {
 
   return (
     <div
-      className="min-h-screen px-4 py-6 sm:py-12"
+      className="min-h-screen px-6 py-8 sm:px-8 sm:py-12"
       style={{ backgroundColor: pageColor, color: textColor, fontFamily: fontOf(profile.font_style).family }}
     >
       <div className="mx-auto grid w-full max-w-6xl items-start gap-10 lg:grid-cols-[17rem_minmax(0,1fr)]">
-        <div className="flex w-full flex-col gap-4 lg:sticky lg:top-8">
-          <div className="flex items-center gap-4">
+        <div className="flex w-full flex-col gap-6 lg:sticky lg:top-8 lg:gap-4">
+          <div className="flex items-start gap-4">
             <div className="shrink-0 self-start">
               <Avatar
                 src={profile.avatar_url}
                 name={profile.name}
-                className="w-16 shadow-sm lg:w-28"
-                textClassName="text-xl lg:text-3xl"
+                className="w-[4.75rem] shadow-sm lg:w-28"
+                textClassName="text-2xl lg:text-3xl"
               />
             </div>
             <div className="flex min-w-0 flex-1 items-start justify-between gap-3 lg:hidden">
-              <div className="min-w-0">
-                <p className="truncate text-2xl font-bold leading-none tracking-tight">
+              <div className="min-w-0 pt-0.5">
+                <p className="truncate text-xl font-bold leading-none tracking-tight">
                   {profile.name || `@${profile.username}`}
                 </p>
                 {profile.location && (
-                  <p className="mt-2 flex items-center gap-1.5 text-sm opacity-70">
-                    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 shrink-0 fill-current">
+                  <p className="mt-1.5 flex items-center gap-1 text-[13px] leading-none opacity-70">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5 shrink-0 fill-current">
                       <path d="M12 2a8 8 0 0 0-8 8c0 5 8 12 8 12s8-7 8-12a8 8 0 0 0-8-8Zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z" />
                     </svg>
                     <span className="truncate">{profile.location}</span>
                   </p>
                 )}
               </div>
-              <ShareButton username={profile.username} title={profile.name || profile.username} color={shareColor} href={shareUrl} />
+              <ShareButton username={profile.username} title={profile.name || profile.username} color={shareColor} href={shareUrl} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl shadow-sm" />
             </div>
           </div>
-          <div className="flex w-full flex-col items-start gap-3">
+          <div className="flex w-full flex-col items-start gap-4">
             <p className="hidden text-3xl font-bold leading-none tracking-tight lg:block lg:text-4xl">
               {profile.name || `@${profile.username}`}
             </p>
@@ -120,7 +120,7 @@ export default async function ProfilePage({ params }) {
               </p>
             )}
             {profile.bio && (
-              <p className="max-w-lg whitespace-pre-line break-words text-sm font-medium leading-relaxed opacity-90 sm:text-base">
+              <p className="max-w-lg whitespace-pre-line break-words text-[15px] font-medium leading-6 opacity-90 sm:text-base">
                 {profile.bio}
               </p>
             )}
@@ -133,7 +133,7 @@ export default async function ProfilePage({ params }) {
             <ShareButton username={profile.username} title={profile.name || profile.username} color={shareColor} href={shareUrl} />
           </div>
           {sites.length > 0 && (
-          <div className="grid gap-2.5 lg:grid-cols-2 lg:gap-4">
+          <div className="grid gap-5 lg:grid-cols-2 lg:gap-4">
             {sites.map((site) => (
               <AnalyticsCard
                 key={site.id}
