@@ -1,7 +1,7 @@
 import { requireUser } from "@/lib/auth";
 import { getConnection, isAccessRevoked, listProperties } from "@/lib/google";
 import { selectProfile, socialLinksOf } from "@/lib/profile";
-import { STYLE_DEFAULTS } from "@/lib/style";
+import { inkFor, STYLE_DEFAULTS } from "@/lib/style";
 import { getSitesWithTraffic } from "@/lib/traffic";
 import SitesManager from "./SitesManager";
 
@@ -87,7 +87,7 @@ export default async function SitesPage({ searchParams }) {
     font: profileRow?.font_style || STYLE_DEFAULTS.font,
     card: profileRow?.card_color || STYLE_DEFAULTS.card,
     page: profileRow?.page_color || STYLE_DEFAULTS.page,
-    text: profileRow?.text_color || STYLE_DEFAULTS.text,
+    text: inkFor(profileRow?.page_color || STYLE_DEFAULTS.page, profileRow?.text_color),
     share: profileRow?.share_color || STYLE_DEFAULTS.share,
   };
 

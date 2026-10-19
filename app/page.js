@@ -10,7 +10,7 @@ import SiteFooter from "@/components/SiteFooter";
 import StyleDemo from "@/components/StyleDemo";
 import { isBuilderAccount } from "@/lib/payments";
 import { PROFILE_COLUMNS, socialLinksOf } from "@/lib/profile";
-import { STYLE_DEFAULTS } from "@/lib/style";
+import { inkFor, STYLE_DEFAULTS } from "@/lib/style";
 import { createClient } from "@/lib/supabase/server";
 import { getSitesWithTraffic } from "@/lib/traffic";
 
@@ -104,7 +104,7 @@ async function loadShowcase() {
         font: profile.font_style || STYLE_DEFAULTS.font,
         card: profile.card_color || STYLE_DEFAULTS.card,
         page: profile.page_color || STYLE_DEFAULTS.page,
-        text: profile.text_color || STYLE_DEFAULTS.text,
+        text: inkFor(profile.page_color || STYLE_DEFAULTS.page, profile.text_color),
         share: profile.share_color || STYLE_DEFAULTS.share,
       },
       font: profile.font_style || "inter",

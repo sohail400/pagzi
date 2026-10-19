@@ -1,6 +1,6 @@
 import { requireUser } from "@/lib/auth";
 import { selectProfile, socialLinksOf } from "@/lib/profile";
-import { STYLE_DEFAULTS } from "@/lib/style";
+import { inkFor, STYLE_DEFAULTS } from "@/lib/style";
 import { getSitesWithTraffic } from "@/lib/traffic";
 import StyleEditor from "./StyleEditor";
 
@@ -27,7 +27,7 @@ export default async function StylePage() {
     font: data?.font_style || STYLE_DEFAULTS.font,
     card: data?.card_color || STYLE_DEFAULTS.card,
     page: data?.page_color || STYLE_DEFAULTS.page,
-    text: data?.text_color || STYLE_DEFAULTS.text,
+    text: inkFor(data?.page_color || STYLE_DEFAULTS.page, data?.text_color),
     share: data?.share_color || STYLE_DEFAULTS.share,
     name: data?.name || "Your name",
     bio: data?.bio || "",

@@ -6,7 +6,7 @@ import ShareButton from "@/components/ShareButton";
 import SocialLinks from "@/components/SocialLinks";
 import { hasFullAccess } from "@/lib/access";
 import { PROFILE_COLUMNS, socialLinksOf, USERNAME_PATTERN } from "@/lib/profile";
-import { fontOf, isDarkHex, STYLE_DEFAULTS } from "@/lib/style";
+import { fontOf, inkFor, STYLE_DEFAULTS } from "@/lib/style";
 import { createClient } from "@/lib/supabase/server";
 import { getSitesWithTraffic, syncStaleSites } from "@/lib/traffic";
 
@@ -65,7 +65,7 @@ export default async function ProfilePage({ params }) {
 
   const links = socialLinksOf(profile);
   const pageColor = profile.page_color || STYLE_DEFAULTS.page;
-  const textColor = profile.text_color || (isDarkHex(pageColor) ? STYLE_DEFAULTS.text : "#1C1917");
+  const textColor = inkFor(pageColor, profile.text_color);
   const shareColor = profile.share_color || STYLE_DEFAULTS.share;
   const shareUrl = profile.custom_domain
     ? `https://${profile.custom_domain}`

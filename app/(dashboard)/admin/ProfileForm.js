@@ -6,7 +6,7 @@ import Avatar from "@/components/Avatar";
 import PagePhone from "@/components/PagePhone";
 import SocialLinks from "@/components/SocialLinks";
 import { LIMITS, SOCIAL_LINKS, socialLinksOf } from "@/lib/profile";
-import { STYLE_DEFAULTS } from "@/lib/style";
+import { inkFor, STYLE_DEFAULTS } from "@/lib/style";
 import { updateProfile } from "./actions";
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
@@ -273,7 +273,7 @@ export default function ProfileForm({ profile, siteUrl }) {
             links: previewLinks,
           }}
           page={profile.page_color || STYLE_DEFAULTS.page}
-          text={profile.text_color || STYLE_DEFAULTS.text}
+          text={inkFor(profile.page_color || STYLE_DEFAULTS.page, profile.text_color)}
           share={profile.share_color || STYLE_DEFAULTS.share}
           font={profile.font_style || STYLE_DEFAULTS.font}
           clicks={profile.chart_clicks || STYLE_DEFAULTS.chartClicks}
