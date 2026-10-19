@@ -509,8 +509,9 @@ export default function AnalyticsCard({
           </>
         )}
         {!compact && (
+          <div className={mobileCompact ? "flex w-full justify-end lg:contents" : "contents"}>
           <div
-            className={`join shrink-0 rounded-full border-0 p-0.5 ${mobileCompact ? "max-lg:hidden" : ""} ${darkCard ? "bg-[#161616]" : "bg-white"}`}
+            className={`join shrink-0 rounded-full border-0 p-0.5 ${darkCard ? "bg-[#161616]" : "bg-white"}`}
             role="group"
             aria-label="Date range"
           >
@@ -537,6 +538,7 @@ export default function AnalyticsCard({
                 {item.label}
               </button>
             ))}
+          </div>
           </div>
         )}
       </div>
