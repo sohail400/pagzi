@@ -50,9 +50,11 @@ async function loadProfile(supabase) {
     const result = await supabase.from("profiles").select(list.join(", ")).eq("username", SHOWCASE_USERNAME).maybeSingle();
     if (!result.error) return result.data;
     const detail = `${result.error.message ?? ""} ${result.error.details ?? ""} ${result.error.hint ?? ""}`;
-    console.error("Landing profile query failed:", result.error.message);
     const missing = list.find((column) => detail.includes(column));
-    if (!missing) return null;
+    if (!missing) {
+      console.error("Landing profile query failed:", result.error.message);
+      return null;
+    }
     list = list.filter((column) => column !== missing);
   }
   return null;

@@ -5,7 +5,7 @@ import Avatar from "@/components/Avatar";
 import ShareButton from "@/components/ShareButton";
 import SocialLinks from "@/components/SocialLinks";
 import { hasFullAccess } from "@/lib/access";
-import { PROFILE_COLUMNS, socialLinksOf, USERNAME_PATTERN } from "@/lib/profile";
+import { isPublished, PROFILE_COLUMNS, socialLinksOf, USERNAME_PATTERN } from "@/lib/profile";
 import { fontOf, inkFor, STYLE_DEFAULTS } from "@/lib/style";
 import { createClient } from "@/lib/supabase/server";
 import { getSitesWithTraffic, syncStaleSites } from "@/lib/traffic";
@@ -21,20 +21,20 @@ const getProfile = cache(async (username) => {
   if (!USERNAME_PATTERN.test(normalized)) return null;
 
   const supabase = await createClient();
-  const full = `id, ${PROFILE_COLUMNS}, paid_at`;
-  const first = await supabase.from("profiles").select(full).eq("username", normalized).maybeSingle();
-  if (!first.error) return first.data;
-  if (/paid_at/.test(first.error.message ?? "")) {
-    const withoutPayment = await supabase.from("profiles").select(`id, ${PROFILE_COLUMNS}`).eq("username", normalized).maybeSingle();
-    return withoutPayment.data ? { ...withoutPayment.data, paid_at: null } : null;
+  let columns = `id, ${PROFILE_COLUMNS}, paid_at`;
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const result = await supabase.from("profiles").select(columns).eq("username", normalized).maybeSingle();
+    if (!result.error) return result.data;
+    const missing = ["paid_at", "published_at", "text_color", "share_color", "custom_domain"].find((column) =>
+      `${result.error.message ?? ""}`.includes(column)
+    );
+    if (!missing || !columns.includes(missing)) {
+      console.error("Loading a public profile failed:", result.error);
+      return null;
+    }
+    columns = columns.replace(new RegExp(`,\\s*${missing}\\b`), "");
   }
-  if (!/text_color|share_color|custom_domain/.test(first.error.message ?? "")) {
-    console.error("Loading a public profile failed:", first.error);
-    return null;
-  }
-  const basic = full.replace(", text_color", "").replace(", share_color", "").replace(", custom_domain", "");
-  const second = await supabase.from("profiles").select(basic).eq("username", normalized).maybeSingle();
-  return second.data;
+  return null;
 });
 
 async function loadSites(userId) {
@@ -49,7 +49,7 @@ async function loadSites(userId) {
 export async function generateMetadata({ params }) {
   const { username } = await params;
   const profile = await getProfile(username);
-  if (!profile || !hasFullAccess(profile)) return { title: "Page not found · pagzi.online" };
+  if (!profile || !hasFullAccess(profile) || !isPublished(profile)) return { title: "Page not found · pagzi.online" };
 
   const displayName = profile.name || `@${profile.username}`;
   return {
@@ -61,7 +61,7 @@ export async function generateMetadata({ params }) {
 export default async function ProfilePage({ params }) {
   const { username } = await params;
   const profile = await getProfile(username);
-  if (!profile || !hasFullAccess(profile)) notFound();
+  if (!profile || !hasFullAccess(profile) || !isPublished(profile)) notFound();
 
   const links = socialLinksOf(profile);
   const pageColor = profile.page_color || STYLE_DEFAULTS.page;

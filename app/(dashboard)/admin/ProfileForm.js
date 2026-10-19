@@ -5,7 +5,7 @@ import { startTransition, useActionState, useEffect, useRef, useState } from "re
 import Avatar from "@/components/Avatar";
 import PagePhone from "@/components/PagePhone";
 import SocialLinks from "@/components/SocialLinks";
-import { LIMITS, SOCIAL_LINKS, socialLinksOf } from "@/lib/profile";
+import { isPublished, LIMITS, SOCIAL_LINKS, socialLinksOf } from "@/lib/profile";
 import { inkFor, STYLE_DEFAULTS } from "@/lib/style";
 import { updateProfile } from "./actions";
 
@@ -30,6 +30,8 @@ export default function ProfileForm({ profile, siteUrl }) {
   const [state, formAction, pending] = useActionState(updateProfile, null);
   const [values, setValues] = useState(() => toFormValues(profile));
   const [savedUsername, setSavedUsername] = useState(profile.username ?? "");
+  const [published, setPublished] = useState(() => isPublished(profile));
+  const [intent, setIntent] = useState("save");
   const [avatarPreview, setAvatarPreview] = useState(profile.avatar_url);
   const [photoError, setPhotoError] = useState("");
   const [copied, setCopied] = useState(false);
@@ -38,6 +40,7 @@ export default function ProfileForm({ profile, siteUrl }) {
   useEffect(() => {
     if (!state?.success) return;
     setSavedUsername(state.profile.username ?? "");
+    setPublished(isPublished(state.profile));
     setValues(toFormValues(state.profile));
     setAvatarPreview(state.profile.avatar_url);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -70,6 +73,9 @@ export default function ProfileForm({ profile, siteUrl }) {
   function handleSubmit(event) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
+    const nextIntent = event.nativeEvent.submitter?.value || "save";
+    formData.set("intent", nextIntent);
+    setIntent(nextIntent);
     startTransition(() => formAction(formData));
   }
 
@@ -98,7 +104,7 @@ export default function ProfileForm({ profile, siteUrl }) {
               <p className="text-lg font-bold text-white">Profile</p>
               <p className="mt-1 text-sm text-stone-400">Your public details and social links.</p>
             </div>
-            {savedUsername ? (
+            {published ? (
               <span className="badge badge-outline badge-sm border-emerald-300 text-emerald-700">Published</span>
             ) : (
               <span className="badge badge-outline badge-sm border-white/20 text-stone-300">Not published</span>
@@ -156,7 +162,9 @@ export default function ProfileForm({ profile, siteUrl }) {
                   />
                 </label>
                 <p className="fieldset-label pt-2 text-xs text-stone-400">
-                  {savedUsername ? "Lowercase letters, numbers, - and _." : "Choose a username to publish your page."}
+                  {published
+                    ? "Lowercase letters, numbers, - and _."
+                    : "Your page stays private until you publish it."}
                 </p>
               </fieldset>
             </div>
@@ -228,7 +236,7 @@ export default function ProfileForm({ profile, siteUrl }) {
                 <button
                   type="button"
                   onClick={copyPublicUrl}
-                  disabled={!savedUsername}
+                  disabled={!published}
                   className="btn join-item h-11 rounded-r-xl border-white/15 bg-[#161616] px-5 text-stone-100 shadow-none hover:bg-white/10"
                 >
                   {copied ? "Copied" : "Copy"}
@@ -244,15 +252,26 @@ export default function ProfileForm({ profile, siteUrl }) {
               )}
               {state?.success && !pending && (
                 <p role="status" className="mr-auto text-sm text-emerald-700">
-                  Changes saved.
+                  {intent === "publish" && isPublished(state.profile) ? "Your page is live." : "Changes saved."}
                 </p>
               )}
               <button
                 type="submit"
+                name="intent"
+                value="save"
                 disabled={pending}
+                className="btn h-11 rounded-xl border border-white/15 bg-[#161616] px-6 font-semibold text-stone-100 shadow-none hover:bg-white/10"
+              >
+                {pending && intent === "save" ? "Saving…" : "Save changes"}
+              </button>
+              <button
+                type="submit"
+                name="intent"
+                value="publish"
+                disabled={pending || published}
                 className="btn btn-save h-11 rounded-xl border-0 px-6 font-semibold text-white shadow-none"
               >
-                {pending ? "Saving…" : "Save changes"}
+                {published ? "Published" : pending && intent === "publish" ? "Publishing…" : "Publish"}
               </button>
             </div>
           </form>
@@ -262,7 +281,7 @@ export default function ProfileForm({ profile, siteUrl }) {
       <div className="xl:sticky xl:top-8">
         <div className="mb-3 flex items-center justify-between">
           <p className="text-sm font-semibold text-stone-200">Page preview</p>
-          <span className="text-xs text-stone-400">Live</span>
+          <span className="text-xs text-stone-400">Preview</span>
         </div>
         <PagePhone
           profile={{
@@ -280,7 +299,7 @@ export default function ProfileForm({ profile, siteUrl }) {
           impressions={profile.chart_impressions || STYLE_DEFAULTS.chartImpressions}
           card={profile.card_color || STYLE_DEFAULTS.card}
         />
-        {savedUsername ? (
+        {published && savedUsername ? (
           <Link
             href={`/${savedUsername}`}
             className="btn mt-4 h-11 w-full rounded-full border-white/15 bg-[#161616] font-semibold text-stone-100 shadow-none hover:bg-white/10"
@@ -288,7 +307,9 @@ export default function ProfileForm({ profile, siteUrl }) {
             View my page
           </Link>
         ) : (
-          <p className="mt-4 text-center text-xs text-stone-400">Save a username to view your page.</p>
+          <p className="mt-4 text-center text-xs text-stone-400">
+            Add your name, bio, and location, then click Publish.
+          </p>
         )}
       </div>
     </div>
