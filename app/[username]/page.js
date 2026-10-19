@@ -21,13 +21,14 @@ const getProfile = cache(async (username) => {
   if (!USERNAME_PATTERN.test(normalized)) return null;
 
   const supabase = await createClient();
-  let columns = `id, ${PROFILE_COLUMNS}, paid_at`;
-  for (let attempt = 0; attempt < 6; attempt += 1) {
+  let columns = `id, ${PROFILE_COLUMNS}, paid_at, plan, plan_expires_at`;
+  for (let attempt = 0; attempt < 8; attempt += 1) {
     const result = await supabase.from("profiles").select(columns).eq("username", normalized).maybeSingle();
     if (!result.error) return result.data;
-    const missing = ["paid_at", "published_at", "text_color", "share_color", "custom_domain"].find((column) =>
-      `${result.error.message ?? ""}`.includes(column)
-    );
+    const detail = `${result.error.message ?? ""} ${result.error.details ?? ""} ${result.error.hint ?? ""}`;
+    const optional = ["plan_expires_at", "paid_at", "plan", "published_at", "text_color", "share_color", "custom_domain"];
+    const missing = optional.find((column) => detail.includes(column) && columns.includes(column))
+      || (!result.error.message ? optional.find((column) => ["plan_expires_at", "plan"].includes(column) && columns.includes(column)) : "");
     if (!missing || !columns.includes(missing)) {
       console.error("Loading a public profile failed:", result.error);
       return null;

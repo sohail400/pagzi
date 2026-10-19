@@ -2,6 +2,7 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { billingPath } from "@/lib/plans";
 import { createClient } from "@/lib/supabase/server";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -35,15 +36,17 @@ export async function signup(previousState, formData) {
   if (formData.get("terms") !== "on") return { error: "Please accept the terms and privacy policy.", values };
 
   const origin = (await headers()).get("origin");
+  const destination = billingPath(formData.get("plan"));
+  const confirmNext = destination === "/admin" ? "" : `?next=${encodeURIComponent(destination)}`;
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { name }, emailRedirectTo: `${origin}/auth/confirm` },
+    options: { data: { name }, emailRedirectTo: `${origin}/auth/confirm${confirmNext}` },
   });
 
   if (error) return { error: friendlyError(error), values };
-  if (data.session) redirect("/admin");
+  if (data.session) redirect(destination);
 
   return { success: true, email };
 }
@@ -62,7 +65,7 @@ export async function login(previousState, formData) {
 
   if (error) return { error: friendlyError(error), values };
 
-  redirect("/admin");
+  redirect(billingPath(formData.get("plan")));
 }
 
 export async function requestPasswordReset(previousState, formData) {

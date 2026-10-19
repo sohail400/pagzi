@@ -7,7 +7,7 @@ import { profileDetailsReady, selectProfile, STYLE_SAVED_COOKIE } from "@/lib/pr
 export default async function Layout({ children }) {
   const { supabase, userId, email } = await requireUser();
   const [{ data: profile }, sites, cookieStore] = await Promise.all([
-    selectProfile(supabase, userId, "name, username, bio, location, paid_at, published_at"),
+    selectProfile(supabase, userId, "name, username, bio, location, paid_at, plan, plan_expires_at, published_at"),
     supabase.from("sites").select("id", { count: "exact", head: true }).eq("user_id", userId),
     cookies(),
   ]);

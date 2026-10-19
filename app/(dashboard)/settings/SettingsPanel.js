@@ -2,8 +2,10 @@
 
 import { useActionState, useState } from "react";
 import { logout } from "@/app/auth/actions";
+import { openBillingPortal } from "@/app/billing/actions";
 import PayButton from "@/components/PayButton";
 import { APP_DOMAIN, dnsName } from "@/lib/custom-domain";
+import { PLAN_OPTIONS } from "@/lib/plans";
 import { deleteAccount, updateCustomDomain, updateUsername } from "./actions";
 
 const CARD = "rounded-2xl bg-[#2A2A2A] px-6 py-6";
@@ -28,14 +30,110 @@ function Tab({ active, children, onClick }) {
   );
 }
 
+function Billing({
+  paid,
+  builder,
+  plan,
+  planName,
+  expiresLabel,
+  earlyLeft,
+  earlySoldOut,
+  selectedPlan,
+  hasReceipts,
+}) {
+  const [portalState, portalAction, portalPending] = useActionState(openBillingPortal, null);
+  const status = builder
+    ? "Builder account. No payment needed."
+    : plan === "year" && expiresLabel
+      ? `${planName} is active until ${expiresLabel}.`
+      : planName
+        ? `${planName}. This page is yours.`
+        : "Paid. This page is yours.";
+
+  return (
+    <section className={CARD}>
+      <p className="text-lg font-semibold text-white">Billing information</p>
+      <p className="mt-2 text-sm leading-6 text-stone-400">One-time payment. No subscription.</p>
+      {paid ? (
+        <p className="mt-6 text-sm font-medium text-emerald-300">{status}</p>
+      ) : (
+        <div className="mt-6 space-y-5">
+          {plan === "year" && expiresLabel && (
+            <p className="text-sm leading-6 text-stone-300">Your 1-Year Pass ended on {expiresLabel}.</p>
+          )}
+          {PLAN_OPTIONS.map((option) => {
+            const soldOut = option.id === "early" && earlySoldOut;
+            const selected = selectedPlan === option.id;
+            return (
+              <div
+                key={option.id}
+                className={`rounded-xl border px-4 py-4 ${selected ? "border-[#ff4fa3]" : "border-white/10"}`}
+              >
+                <div className="flex items-end justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-stone-200">{option.name}</p>
+                    <p className="mt-1 text-sm text-stone-400">{option.detail}</p>
+                    {option.id === "early" && (
+                      <p className="mt-1 text-sm text-stone-400">
+                        {soldOut ? "Sold out" : `${earlyLeft} of 20 spots left`}
+                      </p>
+                    )}
+                  </div>
+                  <p className="text-3xl font-bold tracking-tight text-white">${option.price}</p>
+                </div>
+                {soldOut ? (
+                  <button
+                    type="button"
+                    disabled
+                    className="btn btn-save mt-4 h-11 w-full cursor-not-allowed rounded-xl border-0 text-sm font-semibold text-white shadow-none"
+                  >
+                    Sold out
+                  </button>
+                ) : (
+                  <PayButton
+                    plan={option.id}
+                    label={`Pay $${option.price}`}
+                    className="btn btn-save mt-4 h-11 w-full rounded-xl border-0 text-sm font-semibold text-white shadow-none"
+                  />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {hasReceipts && (
+        <form action={portalAction} className="mt-6">
+          <button type="submit" disabled={portalPending} className="text-xs font-semibold uppercase tracking-wider text-stone-200 hover:text-white">
+            {portalPending ? "Opening receipts…" : "Receipts"}
+          </button>
+          {portalState?.error && <p className="mt-3 text-sm text-red-300">{portalState.error}</p>}
+        </form>
+      )}
+    </section>
+  );
+}
+
 function Notice({ error, success }) {
   if (error) return <p className="mt-3 text-sm text-red-300">{error}</p>;
   if (success) return <p className="mt-3 text-sm text-emerald-300">Saved.</p>;
   return null;
 }
 
-export default function SettingsPanel({ username, customDomain, paid = false, builder = false, checkout = "" }) {
-  const [tab, setTab] = useState(checkout ? "billing" : "account");
+export default function SettingsPanel({
+  username,
+  customDomain,
+  paid = false,
+  builder = false,
+  checkout = "",
+  plan = "",
+  planName = "",
+  expiresLabel = "",
+  earlyLeft = 0,
+  earlySoldOut = false,
+  selectedPlan = "",
+  hasReceipts = false,
+}) {
+  const [tab, setTab] = useState(checkout || selectedPlan ? "billing" : "account");
   const [nameState, nameAction, namePending] = useActionState(updateUsername, null);
   const [domainState, domainAction, domainPending] = useActionState(updateCustomDomain, null);
   const [deleteState, deleteAction, deletePending] = useActionState(deleteAccount, null);
@@ -73,7 +171,9 @@ export default function SettingsPanel({ username, customDomain, paid = false, bu
         </p>
       )}
       {checkout === "required" && (
-        <p className="mb-6 text-sm leading-6 text-stone-300">Pay $9 once to publish your page and use the profile, sites, and style tools.</p>
+        <p className="mb-6 text-sm leading-6 text-stone-300">
+          Choose a price to publish your page and use the profile, sites, and style tools.
+        </p>
       )}
       {checkout === "paid" && <p className="mb-6 text-sm leading-6 text-emerald-300">This page is already paid.</p>}
       {checkout === "builder" && (
@@ -199,21 +299,17 @@ export default function SettingsPanel({ username, customDomain, paid = false, bu
           )}
         </div>
       ) : (
-        <section className={CARD}>
-          <p className="text-lg font-semibold text-white">Billing information</p>
-          <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium text-stone-200">First 30 users</p>
-              <p className="mt-1 text-sm text-stone-400">One-time payment, no subscription</p>
-            </div>
-            <p className="text-3xl font-bold tracking-tight text-white">$9</p>
-          </div>
-          <PayButton
-            paid={paid}
-            complimentary={builder}
-            className="btn btn-save mt-6 h-11 w-full rounded-xl border-0 text-sm font-semibold text-white shadow-none"
-          />
-        </section>
+        <Billing
+          paid={paid}
+          builder={builder}
+          plan={plan}
+          planName={planName}
+          expiresLabel={expiresLabel}
+          earlyLeft={earlyLeft}
+          earlySoldOut={earlySoldOut}
+          selectedPlan={selectedPlan}
+          hasReceipts={hasReceipts}
+        />
       )}
     </div>
   );

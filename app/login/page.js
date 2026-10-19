@@ -1,5 +1,6 @@
 import Link from "next/link";
 import BrandMark from "@/components/BrandMark";
+import { isPlanId } from "@/lib/plans";
 import LoginForm from "./LoginForm";
 
 const NOTICES = {
@@ -13,7 +14,9 @@ export const metadata = {
 };
 
 export default async function LoginPage({ searchParams }) {
-  const { error } = await searchParams;
+  const { error, plan } = await searchParams;
+  const selectedPlan = isPlanId(plan) ? plan : "";
+  const signupHref = selectedPlan ? `/signup?plan=${selectedPlan}` : "/signup";
 
   return (
     <div className="min-h-screen bg-[#1F1F1F] font-sans text-stone-100">
@@ -31,7 +34,7 @@ export default async function LoginPage({ searchParams }) {
         <div className="navbar-end gap-2 text-sm text-stone-500">
           <span className="hidden sm:inline">New to pagzi.online?</span>
           <Link
-            href="/signup"
+            href={signupHref}
             className="btn btn-sm rounded-full border-white/15 bg-[#1F1F1F] px-5 font-semibold text-stone-100 shadow-none hover:bg-white/10"
           >
             Create account
@@ -50,11 +53,11 @@ export default async function LoginPage({ searchParams }) {
 
           <div className="card rounded-[2rem] border border-white/10 bg-[#1F1F1F]">
             <div className="card-body gap-0 p-6 sm:p-8">
-              <LoginForm notice={NOTICES[error]} />
+              <LoginForm notice={NOTICES[error]} plan={selectedPlan} />
 
               <p className="mt-6 text-center text-sm text-stone-500">
                 Don’t have an account?{" "}
-                <Link href="/signup" className="link font-semibold text-white">
+                <Link href={signupHref} className="link font-semibold text-white">
                   Create your page
                 </Link>
               </p>

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { hasFullAccess } from "@/lib/access";
+import { hasFullAccess, selectAccess } from "@/lib/access";
 import { requireUser } from "@/lib/auth";
 import { getConnection, revokeToken } from "@/lib/google";
 import { USERNAME_PATTERN } from "@/lib/profile";
@@ -47,9 +47,9 @@ function checkedDomain(value) {
 
 export async function updateCustomDomain(previousState, formData) {
   const { supabase, userId } = await requireUser();
-  const profile = await supabase.from("profiles").select("username, paid_at").eq("id", userId).maybeSingle();
+  const profile = await selectAccess(supabase, userId);
   if (profile.error || !hasFullAccess(profile.data)) {
-    return { error: "Pay $9 to connect a custom domain." };
+    return { error: "Pay for your page to connect a custom domain." };
   }
   const checked = checkedDomain(formData.get("domain"));
   if (checked.error) return checked;

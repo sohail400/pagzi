@@ -2,41 +2,41 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { hasFullAccess, selectAccess } from "@/lib/access";
 import { requireUser } from "@/lib/auth";
-import { earlySpotCount, isBuilderAccount } from "@/lib/payments";
+import { isPlanId, planOption } from "@/lib/plans";
+import { dodoEnvironment, earlySpotCount, isBuilderAccount, productIdFor } from "@/lib/payments";
 
-function dodoConfig() {
-  const apiKey = process.env.DODO_PAYMENTS_API_KEY || "";
-  const productId = process.env.DODO_PAYMENTS_PRODUCT_ID || "";
-  const environment = process.env.DODO_PAYMENTS_ENVIRONMENT === "live_mode" ? "live_mode" : "test_mode";
-  const base = environment === "live_mode" ? "https://live.dodopayments.com" : "https://test.dodopayments.com";
-  return { apiKey, productId, base };
-}
+export async function startCheckout(previousState, formData) {
+  const plan = String(formData?.get("plan") ?? "");
+  const option = planOption(plan);
+  if (!isPlanId(plan) || !option) return { error: "Choose Early, the 1-Year Pass, or the Lifetime Deal." };
 
-export async function startCheckout() {
   const { supabase, userId, email } = await requireUser();
-  const { apiKey, productId, base } = dodoConfig();
+  const { apiKey, base } = dodoEnvironment();
+  const productId = productIdFor(plan);
   if (!apiKey || !productId) {
-    return { error: "Payments are not set up yet. Add the Dodo API key and the $9 product id." };
+    return { error: `${option.name} is not set up yet. Add its Dodo product id.` };
   }
   if (!email) return { error: "Your account has no email, so checkout cannot start." };
 
-  const profile = await supabase.from("profiles").select("name, username, paid_at").eq("id", userId).maybeSingle();
+  const profile = await selectAccess(supabase, userId);
   if (profile.error) {
     return { error: "Billing is not ready yet. Run the payments database update, then try again." };
   }
+  const nameRow = await supabase.from("profiles").select("name").eq("id", userId).maybeSingle();
   if (isBuilderAccount(profile.data?.username)) redirect("/settings?checkout=builder");
-  if (profile.data?.paid_at) redirect("/settings?checkout=paid");
+  if (hasFullAccess(profile.data)) redirect("/settings?checkout=paid");
 
-  let spots;
-  try {
-    spots = await earlySpotCount();
-  } catch (error) {
-    console.error("Counting Early spots failed:", error);
-    return { error: "Billing is not ready yet. Run the payments database update, then try again." };
-  }
-  if (spots.soldOut) {
-    return { error: "The $9 Early price is sold out." };
+  if (plan === "early") {
+    let spots;
+    try {
+      spots = await earlySpotCount();
+    } catch (error) {
+      console.error("Counting Early spots failed:", error);
+      return { error: "Billing is not ready yet. Run the payments database update, then try again." };
+    }
+    if (spots.soldOut) return { error: "The Early price is sold out." };
   }
 
   const headerStore = await headers();
@@ -50,8 +50,8 @@ export async function startCheckout() {
     },
     body: JSON.stringify({
       product_cart: [{ product_id: productId, quantity: 1 }],
-      customer: { email, name: profile.data?.name || undefined },
-      metadata: { user_id: userId },
+      customer: { email, name: nameRow.data?.name || undefined },
+      metadata: { user_id: userId, plan },
       return_url: `${proto}://${host}/settings?checkout=return`,
     }),
   });
@@ -63,4 +63,29 @@ export async function startCheckout() {
   }
 
   redirect(body.checkout_url);
+}
+
+export async function openBillingPortal() {
+  const { supabase, userId } = await requireUser();
+  const { apiKey, base } = dodoEnvironment();
+  if (!apiKey) return { error: "Billing portal is not set up yet." };
+
+  const profile = await supabase.from("profiles").select("dodo_customer_id").eq("id", userId).maybeSingle();
+  const customerId = profile.data?.dodo_customer_id;
+  if (profile.error || !customerId) return { error: "A receipt appears here after Dodo confirms the payment." };
+
+  const headerStore = await headers();
+  const host = headerStore.get("x-forwarded-host") || headerStore.get("host");
+  const proto = headerStore.get("x-forwarded-proto") || "http";
+  const returnUrl = `${proto}://${host}/settings?checkout=portal`;
+  const response = await fetch(
+    `${base}/customers/${customerId}/customer-portal/session?send_email=false&return_url=${encodeURIComponent(returnUrl)}`,
+    { method: "POST", headers: { Authorization: `Bearer ${apiKey}` } },
+  );
+  const body = await response.json().catch(() => null);
+  if (!response.ok || !body?.link) {
+    console.error("Dodo customer portal failed:", response.status, body);
+    return { error: "Dodo could not open the billing portal." };
+  }
+  redirect(body.link);
 }

@@ -7,6 +7,7 @@ import ProductDemo from "@/components/ProductDemo";
 import ShowcaseWall from "@/components/ShowcaseWall";
 import SiteFooter from "@/components/SiteFooter";
 import StyleDemo from "@/components/StyleDemo";
+import { PLAN_OPTIONS } from "@/lib/plans";
 import { EARLY_SPOT_LIMIT, earlySpotCount } from "@/lib/payments";
 import { PROFILE_COLUMNS, socialLinksOf } from "@/lib/profile";
 import { inkFor, STYLE_DEFAULTS } from "@/lib/style";
@@ -26,28 +27,6 @@ const FEATURES = [
   "Customize your charts, colors and fonts",
   "Use your own custom domain",
   "24 themes and 13 fonts",
-];
-
-const PLANS = [
-  {
-    id: "early",
-    name: "Early",
-    price: 9,
-    detail: "Lifetime. First 20 spots only.",
-    limited: true,
-  },
-  {
-    id: "year",
-    name: "1-Year Pass",
-    price: 19,
-    detail: "One year. No auto-renew.",
-  },
-  {
-    id: "lifetime",
-    name: "Lifetime Deal",
-    price: 29,
-    detail: "Pay once. Keep your page.",
-  },
 ];
 
 function featureParts(line) {
@@ -352,7 +331,7 @@ export default async function LandingPage() {
               No subscription.
             </p>
             <div className="mt-12 grid items-stretch gap-4 lg:grid-cols-3">
-              {PLANS.map((plan) => {
+              {PLAN_OPTIONS.map((plan) => {
                 const soldOut = plan.id === "early" && early.soldOut;
                 return (
                   <div
@@ -380,7 +359,7 @@ export default async function LandingPage() {
                           Get my page
                         </button>
                       ) : (
-                        <Link href="/signup" className="btn btn-save h-12 w-full rounded-xl border-0 px-7 font-semibold text-white shadow-none">
+                        <Link href={`/signup?plan=${plan.id}`} className="btn btn-save h-12 w-full rounded-xl border-0 px-7 font-semibold text-white shadow-none">
                           Get my page
                         </Link>
                       )}

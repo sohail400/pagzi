@@ -1,5 +1,13 @@
 import { redirect } from "next/navigation";
+import { isPlanId } from "@/lib/plans";
 import { createClient } from "@/lib/supabase/server";
+
+function safeNext(value, type) {
+  if (value === "/reset-password" || type === "recovery") return "/reset-password";
+  const plan = typeof value === "string" && value.startsWith("/settings?plan=") ? value.slice("/settings?plan=".length) : "";
+  if (isPlanId(plan)) return `/settings?plan=${plan}`;
+  return "/admin";
+}
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
@@ -14,7 +22,7 @@ export async function GET(request) {
       ? await supabase.auth.exchangeCodeForSession(code)
       : await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
 
-    if (!error) redirect(searchParams.get("next") === "/reset-password" || type === "recovery" ? "/reset-password" : "/admin");
+    if (!error) redirect(safeNext(searchParams.get("next"), type));
     redirect("/login?error=confirm_failed");
   }
 

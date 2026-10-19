@@ -6,12 +6,15 @@ import { useActionState } from "react";
 import { useSearchParams } from "next/navigation";
 import PasswordField from "@/components/PasswordField";
 import { signup } from "@/app/auth/actions";
+import { isPlanId } from "@/lib/plans";
 import { USERNAME_PATTERN } from "@/lib/profile";
 
 export default function SignupForm() {
   const [state, formAction, pending] = useActionState(signup, null);
-  const requested = useSearchParams().get("username")?.trim().toLowerCase() ?? "";
+  const params = useSearchParams();
+  const requested = params.get("username")?.trim().toLowerCase() ?? "";
   const username = USERNAME_PATTERN.test(requested) ? requested : "";
+  const plan = isPlanId(params.get("plan")) ? params.get("plan") : "";
 
   return (
     <div className="min-h-screen bg-[#1F1F1F] font-sans text-stone-100">
@@ -29,7 +32,7 @@ export default function SignupForm() {
         <div className="navbar-end gap-2 text-sm text-stone-500">
           <span className="hidden sm:inline">Already have an account?</span>
           <Link
-            href="/login"
+            href={plan ? `/login?plan=${plan}` : "/login"}
             className="btn btn-sm rounded-full border-white/15 bg-[#1F1F1F] px-5 font-semibold text-stone-100 shadow-none hover:bg-white/10"
           >
             Sign in
@@ -63,6 +66,7 @@ export default function SignupForm() {
                 </div>
               ) : (
               <form className="space-y-5" action={formAction}>
+                {plan && <input type="hidden" name="plan" value={plan} />}
                 {state?.error && (
                   <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                     {state.error}
@@ -130,7 +134,7 @@ export default function SignupForm() {
 
               <p className="mt-6 text-center text-sm text-stone-500">
                 Already have an account?{" "}
-                <Link href="/login" className="link font-semibold text-white">
+                <Link href={plan ? `/login?plan=${plan}` : "/login"} className="link font-semibold text-white">
                   Sign in
                 </Link>
               </p>

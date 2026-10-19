@@ -5,12 +5,13 @@ import Link from "next/link";
 import PasswordField from "@/components/PasswordField";
 import { login } from "@/app/auth/actions";
 
-export default function LoginForm({ notice }) {
+export default function LoginForm({ notice, plan = "" }) {
   const [state, formAction, pending] = useActionState(login, null);
   const message = state?.error ?? notice;
 
   return (
     <form className="space-y-5" action={formAction}>
+      {plan && <input type="hidden" name="plan" value={plan} />}
       {message && (
         <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {message}
