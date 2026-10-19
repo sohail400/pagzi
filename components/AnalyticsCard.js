@@ -496,7 +496,7 @@ export default function AnalyticsCard({
                 <p className={`truncate font-semibold leading-none ${compact ? "block text-[13px]" : mobileCompact ? "col-start-2 row-start-1 min-w-0 text-[12px] lg:block lg:text-sm" : "block text-sm"} ${darkCard ? "text-white" : "text-stone-800"}`}>{name}</p>
               )}
               {description && (
-                <p className={`min-w-0 truncate text-[11px] leading-snug ${mobileCompact ? "col-span-2 col-start-2 row-start-2 max-lg:leading-none" : ""} ${darkCard ? "text-stone-300" : "text-stone-500"}`}>
+                <p className={`min-w-0 truncate text-[11px] leading-snug ${mobileCompact ? "col-span-2 col-start-2 row-start-2 max-lg:-mt-1 max-lg:leading-none" : ""} ${darkCard ? "text-stone-300" : "text-stone-500"}`}>
                   {description}
                 </p>
               )}
