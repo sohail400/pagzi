@@ -390,11 +390,13 @@ export default function AnalyticsCard({
                 setTooltip(null);
                 return;
               }
+              const index = model.dataPoints?.[0]?.dataIndex;
+              const rawDate = chart.$dates?.[index];
               setTooltip({
                 x: model.caretX,
                 y: model.caretY,
                 flip: model.caretX > chart.width / 2,
-                label: model.title?.[0] ?? "",
+                label: rawDate ? dateLabel.format(new Date(`${rawDate}T00:00:00Z`)) : (model.title?.[0] ?? ""),
                 points: model.dataPoints.map((point) => ({
                   key: point.dataset.label,
                   value: point.raw,
@@ -416,6 +418,7 @@ export default function AnalyticsCard({
     const chart = chartRef.current;
     if (!chart) return;
     const shown = days.slice(-range);
+    chart.$dates = shown.map((day) => day.date);
     const narrow = chart.width > 0 && chart.width < 520;
     const format = compact || mobileCompact || narrow ? shortLabel : dateLabel;
     chart.data.labels = shown.map((day) => format.format(new Date(`${day.date}T00:00:00Z`)));
