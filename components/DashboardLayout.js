@@ -6,19 +6,25 @@ import { usePathname } from "next/navigation";
 import { logout } from "@/app/auth/actions";
 import { initials } from "@/lib/profile";
 
-const navigation = [
-  { label: "Profile", href: "/admin", key: "profile" },
-  { label: "Sites", href: "/sites", key: "sites" },
-  { label: "Style", href: "/style", key: "style" },
-  { label: "Settings", href: "/settings", key: "settings" },
-];
-
-export default function DashboardLayout({ user, locked = false, children }) {
+export default function DashboardLayout({ user, locked = false, showPublish = false, showView = false, publicPath = "", children }) {
   const pathname = usePathname();
+  const navigation = [
+    { label: "Profile", href: "/admin", key: "profile" },
+    { label: "Sites", href: "/sites", key: "sites" },
+    { label: "Style", href: "/style", key: "style" },
+    showPublish ? { label: "Publish", href: "/publish", key: "publish" } : null,
+    showView && publicPath ? { label: "View", href: publicPath, key: "view" } : null,
+    { label: "Settings", href: "/settings", key: "settings" },
+  ].filter(Boolean);
   const links = navigation.map((item) =>
     locked && item.key !== "settings" ? { ...item, href: "/settings?checkout=required" } : item,
   );
-  const active = links.find((item) => pathname.startsWith(item.href.split("?")[0]) && !(locked && item.key !== "settings"))?.key;
+  const active = links.find((item) => {
+    if (locked && item.key !== "settings") return false;
+    const href = item.href.split("?")[0];
+    if (item.key === "view") return pathname === href;
+    return pathname === href || pathname.startsWith(`${href}/`);
+  })?.key;
 
   return (
     <div className="min-h-screen bg-[#1F1F1F] font-sans text-stone-100">

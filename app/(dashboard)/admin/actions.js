@@ -64,15 +64,7 @@ export async function updateProfile(previousState, formData) {
   if (bio.length > LIMITS.bio) return { error: `Your bio can be up to ${LIMITS.bio} characters.` };
   if (location.length > LIMITS.location) return { error: `Your location can be up to ${LIMITS.location} characters.` };
 
-  const publishing = formData.get("intent") === "publish";
-  if (publishing) {
-    if (!name) return { error: "Add your name before you publish." };
-    if (!bio) return { error: "Add a short bio before you publish." };
-    if (!location) return { error: "Add your location before you publish." };
-  }
-
   const updates = { username, name, bio, location };
-  if (publishing) updates.published_at = new Date().toISOString();
   for (const link of SOCIAL_LINKS) {
     const { url, invalid } =
       link.kind === "email" ? normalizeEmail(text(link.key)) : normalizeSocialUrl(text(link.key), link.hosts);
@@ -104,9 +96,6 @@ export async function updateProfile(previousState, formData) {
   const { error: updateError } = await supabase.from("profiles").update(updates).eq("id", userId);
   if (updateError) {
     if (newAvatarPath) await supabase.storage.from("avatars").remove([newAvatarPath]);
-    if (publishing && /published_at/.test(updateError.message ?? "")) {
-      return { error: "Publishing is not ready yet. Run the new SQL in Supabase, then try again." };
-    }
     return { error: databaseError(updateError) };
   }
 

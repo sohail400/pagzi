@@ -1,7 +1,9 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { requireFullAccess } from "@/lib/payments";
+import { STYLE_SAVED_COOKIE } from "@/lib/profile";
 import { FONTS, normalizeHex } from "@/lib/style";
 
 export async function updateStyle(previousState, formData) {
@@ -39,6 +41,8 @@ export async function updateStyle(previousState, formData) {
     return { error: "We couldn't save your style. Please try again." };
   }
 
+  const cookieStore = await cookies();
+  cookieStore.set(STYLE_SAVED_COOKIE, "1", { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 365 });
   revalidatePath("/", "layout");
   return { success: true };
 }

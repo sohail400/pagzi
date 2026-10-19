@@ -1,11 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { startTransition, useActionState, useEffect, useRef, useState } from "react";
 import Avatar from "@/components/Avatar";
 import PagePhone from "@/components/PagePhone";
 import SocialLinks from "@/components/SocialLinks";
-import { isPublished, LIMITS, SOCIAL_LINKS, socialLinksOf } from "@/lib/profile";
+import { LIMITS, SOCIAL_LINKS, socialLinksOf } from "@/lib/profile";
 import { inkFor, STYLE_DEFAULTS } from "@/lib/style";
 import { updateProfile } from "./actions";
 
@@ -30,8 +29,7 @@ export default function ProfileForm({ profile, siteUrl }) {
   const [state, formAction, pending] = useActionState(updateProfile, null);
   const [values, setValues] = useState(() => toFormValues(profile));
   const [savedUsername, setSavedUsername] = useState(profile.username ?? "");
-  const [published, setPublished] = useState(() => isPublished(profile));
-  const [intent, setIntent] = useState("save");
+  const [published, setPublished] = useState(() => Boolean(profile.published_at));
   const [avatarPreview, setAvatarPreview] = useState(profile.avatar_url);
   const [photoError, setPhotoError] = useState("");
   const [copied, setCopied] = useState(false);
@@ -40,7 +38,7 @@ export default function ProfileForm({ profile, siteUrl }) {
   useEffect(() => {
     if (!state?.success) return;
     setSavedUsername(state.profile.username ?? "");
-    setPublished(isPublished(state.profile));
+    setPublished(Boolean(state.profile.published_at));
     setValues(toFormValues(state.profile));
     setAvatarPreview(state.profile.avatar_url);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -73,9 +71,6 @@ export default function ProfileForm({ profile, siteUrl }) {
   function handleSubmit(event) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const nextIntent = event.nativeEvent.submitter?.value || "save";
-    formData.set("intent", nextIntent);
-    setIntent(nextIntent);
     startTransition(() => formAction(formData));
   }
 
@@ -252,26 +247,15 @@ export default function ProfileForm({ profile, siteUrl }) {
               )}
               {state?.success && !pending && (
                 <p role="status" className="mr-auto text-sm text-emerald-700">
-                  {intent === "publish" && isPublished(state.profile) ? "Your page is live." : "Changes saved."}
+                  Changes saved.
                 </p>
               )}
               <button
                 type="submit"
-                name="intent"
-                value="save"
                 disabled={pending}
-                className="btn h-11 rounded-xl border border-white/15 bg-[#161616] px-6 font-semibold text-stone-100 shadow-none hover:bg-white/10"
-              >
-                {pending && intent === "save" ? "Saving…" : "Save changes"}
-              </button>
-              <button
-                type="submit"
-                name="intent"
-                value="publish"
-                disabled={pending || published}
                 className="btn btn-save h-11 rounded-xl border-0 px-6 font-semibold text-white shadow-none"
               >
-                {published ? "Published" : pending && intent === "publish" ? "Publishing…" : "Publish"}
+                {pending ? "Saving…" : "Save changes"}
               </button>
             </div>
           </form>
@@ -299,17 +283,8 @@ export default function ProfileForm({ profile, siteUrl }) {
           impressions={profile.chart_impressions || STYLE_DEFAULTS.chartImpressions}
           card={profile.card_color || STYLE_DEFAULTS.card}
         />
-        {published && savedUsername ? (
-          <Link
-            href={`/${savedUsername}`}
-            className="btn mt-4 h-11 w-full rounded-full border-white/15 bg-[#161616] font-semibold text-stone-100 shadow-none hover:bg-white/10"
-          >
-            View my page
-          </Link>
-        ) : (
-          <p className="mt-4 text-center text-xs text-stone-400">
-            Add your name, bio, and location, then click Publish.
-          </p>
+        {!published && (
+          <p className="mt-4 text-center text-xs text-stone-400">Your page stays private until you publish it.</p>
         )}
       </div>
     </div>
