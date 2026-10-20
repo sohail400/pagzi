@@ -165,7 +165,9 @@ export default async function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#1F1F1F] font-sans text-stone-100">
-      <header className="navbar mx-auto max-w-6xl px-5 py-5 sm:px-8">
+      <div id="top" className="relative isolate overflow-hidden">
+        <div aria-hidden="true" className="landing-glow pointer-events-none absolute inset-0" />
+      <header className="navbar relative mx-auto max-w-6xl px-5 py-5 sm:px-8">
         <div className="navbar-start">
           <a
             href="#top"
@@ -192,8 +194,7 @@ export default async function LandingPage() {
         </div>
       </header>
 
-      <main id="top">
-        <section className="mx-auto grid max-w-6xl items-center gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[minmax(0,22rem)_1fr] lg:gap-12 lg:py-16">
+        <section className="relative mx-auto grid max-w-6xl items-center gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[minmax(0,22rem)_1fr] lg:gap-12 lg:py-16">
           <LandingPreview
             profile={showcase?.profile}
             sites={showcase?.previewSites || []}
@@ -217,7 +218,9 @@ export default async function LandingPage() {
             </p>
           </div>
         </section>
+      </div>
 
+      <main>
         <section className="bg-[#2A2A2A] px-5 py-12 text-center sm:px-8 sm:py-20 lg:py-28">
           <h2 className="text-3xl font-bold tracking-[-0.035em] text-white sm:text-5xl">
             Everything you build, in one place.
