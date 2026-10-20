@@ -18,6 +18,7 @@ const PAGES = [
 const LEGAL = [
   { href: "/terms", label: "Terms of use" },
   { href: "/privacy", label: "Privacy policy" },
+  { href: "/refund", label: "Refund policy" },
   { href: "/about", label: "About us" },
   { href: "/cookies", label: "Cookie policy" },
 ];

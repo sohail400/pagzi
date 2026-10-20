@@ -12,8 +12,10 @@ export default function TermsPage() {
         page.
       </p>
       <p>
-        The public page is a one-time payment of $9 for the first 30 users, with no subscription. After that, the price goes up. You can stop using the account at any time. We may suspend a page that is used
-        to break the law or to harm other people.
+        The public page is a one-time payment. Early is $9 for the first 20 spots and lasts for the life of the page.
+        The 1-Year Pass is $19 and lasts one year, with no auto-renew. The Lifetime Deal is $29 and lasts for the life
+        of the page. There is no subscription. Refunds are described on the refund policy page. You can stop using the
+        account at any time. We may suspend a page that is used to break the law or to harm other people.
       </p>
     </InfoPage>
   );

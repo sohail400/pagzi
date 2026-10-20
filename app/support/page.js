@@ -9,7 +9,10 @@ export default async function SupportPage() {
 
   return (
     <InfoPage title="Support">
-      <p>Questions about your page, sign-in, or connecting Google Search Console can go straight to Sohail.</p>
+      <p>
+        Questions about your page, sign-in, a payment, or a refund can go straight to Sohail. Refund requests need to
+        arrive within 7 days of payment.
+      </p>
       {email ? (
         <p>
           Email{" "}
