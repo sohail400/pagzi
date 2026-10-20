@@ -1,15 +1,9 @@
 import DashboardLayout from "@/components/DashboardLayout";
 import { hasFullAccess } from "@/lib/access";
-import { requireUser } from "@/lib/auth";
-import { selectProfile } from "@/lib/profile";
+import { loadOwner } from "@/lib/auth";
 
 export default async function Layout({ children }) {
-  const { supabase, userId, email } = await requireUser();
-  const { data: profile } = await selectProfile(
-    supabase,
-    userId,
-    "name, username, bio, location, paid_at, plan, plan_expires_at, published_at",
-  );
+  const { email, profile } = await loadOwner();
   const published = Boolean(profile?.published_at);
   const paid = hasFullAccess(profile);
 

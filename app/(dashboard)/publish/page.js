@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { requireUser } from "@/lib/auth";
-import { profileDetailsReady, selectProfile, STYLE_SAVED_COOKIE } from "@/lib/profile";
+import { loadOwner } from "@/lib/auth";
+import { profileDetailsReady, STYLE_SAVED_COOKIE } from "@/lib/profile";
 import { publishPage } from "./actions";
 
 export const metadata = {
@@ -9,12 +9,7 @@ export const metadata = {
 };
 
 export default async function PublishPage({ searchParams }) {
-  const { supabase, userId } = await requireUser();
-  const [{ data: profile }, cookieStore, query] = await Promise.all([
-    selectProfile(supabase, userId, "username, name, bio, location, published_at"),
-    cookies(),
-    searchParams,
-  ]);
+  const [{ profile }, cookieStore, query] = await Promise.all([loadOwner(), cookies(), searchParams]);
   const { done, error } = await query;
   const published = Boolean(profile?.published_at) || done === "1";
   const styleSaved = cookieStore.get(STYLE_SAVED_COOKIE)?.value === "1";

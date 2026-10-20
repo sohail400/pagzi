@@ -3,7 +3,7 @@ import Avatar from "@/components/Avatar";
 import BrandMark from "@/components/BrandMark";
 import SocialLinks from "@/components/SocialLinks";
 import { socialLinksOf } from "@/lib/profile";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 
 const CREATOR = "sohail";
 const SOCIALS = ["x_url", "linkedin_url", "github_url", "email_url"];
@@ -25,7 +25,7 @@ const LEGAL = [
 
 export async function loadCreator() {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("profiles")
       .select("name, avatar_url, username, x_url, linkedin_url, github_url, email_url")

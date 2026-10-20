@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { refreshOwnerPages } from "@/lib/refresh";
 import { requireFullAccess } from "@/lib/payments";
 import { LIMITS, SOCIAL_LINKS, USERNAME_PATTERN, fetchProfile } from "@/lib/profile";
 
@@ -109,6 +109,6 @@ export async function updateProfile(previousState, formData) {
   const oldAvatarPath = newAvatarPath && avatarPathFromUrl(current?.avatar_url, userId);
   if (oldAvatarPath) await supabase.storage.from("avatars").remove([oldAvatarPath]);
 
-  revalidatePath("/", "layout");
+  refreshOwnerPages(saved.username);
   return { success: true, profile: saved, live: Boolean(saved.published_at) };
 }

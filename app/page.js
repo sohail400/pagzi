@@ -11,10 +11,12 @@ import { PLAN_OPTIONS } from "@/lib/plans";
 import { EARLY_SPOT_LIMIT, earlySpotCount } from "@/lib/payments";
 import { PROFILE_COLUMNS, socialLinksOf } from "@/lib/profile";
 import { inkFor, STYLE_DEFAULTS } from "@/lib/style";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { getSitesWithTraffic } from "@/lib/traffic";
 
 const SHOWCASE_USERNAME = "sohail";
+
+export const revalidate = 120;
 
 const PINK_BUTTON =
   "btn btn-save h-12 w-full rounded-xl border-0 px-7 font-semibold text-white shadow-none sm:w-auto";
@@ -76,7 +78,7 @@ async function loadProfile(supabase) {
 
 async function loadShowcase() {
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const profile = await loadProfile(supabase);
     if (!profile) return null;
 
@@ -160,8 +162,7 @@ function Check() {
 }
 
 export default async function LandingPage() {
-  const showcase = await loadShowcase();
-  const early = await loadEarlySpots();
+  const [showcase, early] = await Promise.all([loadShowcase(), loadEarlySpots()]);
 
   return (
     <div className="min-h-screen bg-[#1F1F1F] font-sans text-stone-100">

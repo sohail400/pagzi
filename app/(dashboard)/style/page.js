@@ -1,5 +1,5 @@
-import { requireUser } from "@/lib/auth";
-import { selectProfile, socialLinksOf } from "@/lib/profile";
+import { loadOwner, requireUser } from "@/lib/auth";
+import { socialLinksOf } from "@/lib/profile";
 import { inkFor, STYLE_DEFAULTS } from "@/lib/style";
 import { getSitesWithTraffic } from "@/lib/traffic";
 import StyleEditor from "./StyleEditor";
@@ -9,17 +9,15 @@ export const metadata = {
 };
 
 export default async function StylePage() {
-  const { supabase, userId } = await requireUser();
-  const profileColumns =
-    "name, username, bio, location, avatar_url, x_url, linkedin_url, instagram_url, youtube_url, github_url, email_url, chart_clicks, chart_impressions, font_style, card_color, page_color, text_color, share_color";
-  const [profile, sites] = await Promise.all([
-    selectProfile(supabase, userId, profileColumns),
+  const sessionPromise = requireUser();
+  const ownerPromise = loadOwner();
+  const sitesPromise = sessionPromise.then(({ supabase, userId }) =>
     getSitesWithTraffic(supabase, userId).catch((loadError) => {
       console.error("Loading sites for the style preview failed:", loadError);
       return [];
     }),
-  ]);
-  const { data, error } = profile;
+  );
+  const [{ profile: data, profileError }, sites] = await Promise.all([ownerPromise, sitesPromise]);
 
   const saved = {
     chartClicks: data?.chart_clicks || STYLE_DEFAULTS.chartClicks,
@@ -45,7 +43,7 @@ export default async function StylePage() {
             Choose how your public page looks. The preview updates as you change it.
           </p>
         </div>
-        {error ? (
+        {profileError ? (
           <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             We couldn’t load your style. Please refresh the page.
           </p>

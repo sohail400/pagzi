@@ -7,8 +7,8 @@ import SocialLinks from "@/components/SocialLinks";
 import { hasFullAccess } from "@/lib/access";
 import { isPublished, PROFILE_COLUMNS, socialLinksOf, USERNAME_PATTERN } from "@/lib/profile";
 import { fontOf, inkFor, STYLE_DEFAULTS } from "@/lib/style";
-import { createClient } from "@/lib/supabase/server";
-import { getSitesWithTraffic, syncStaleSites } from "@/lib/traffic";
+import { getSitesWithTraffic, syncTrafficForVisit } from "@/lib/traffic";
+import { createPublicClient } from "@/lib/supabase/public";
 
 function siteHref(name) {
   const host = String(name || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
@@ -20,7 +20,7 @@ const getProfile = cache(async (username) => {
   const normalized = username.toLowerCase();
   if (!USERNAME_PATTERN.test(normalized)) return null;
 
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   let columns = `id, ${PROFILE_COLUMNS}, paid_at, plan, plan_expires_at`;
   for (let attempt = 0; attempt < 8; attempt += 1) {
     const result = await supabase.from("profiles").select(columns).eq("username", normalized).maybeSingle();
@@ -40,12 +40,14 @@ const getProfile = cache(async (username) => {
 
 async function loadSites(userId) {
   try {
-    return await getSitesWithTraffic(await createClient(), userId);
+    return await getSitesWithTraffic(createPublicClient(), userId);
   } catch (error) {
     console.error("Loading public traffic failed:", error);
     return [];
   }
 }
+
+export const revalidate = 60;
 
 export async function generateMetadata({ params }) {
   const { username } = await params;
@@ -71,8 +73,7 @@ export default async function ProfilePage({ params }) {
   const shareUrl = profile.custom_domain
     ? `https://${profile.custom_domain}`
     : `https://pagzi.online/${profile.username}`;
-  // Sync first so the chart is not drawn from an older, shorter history.
-  await syncStaleSites(profile.id).catch((error) => console.error("Syncing traffic failed:", error));
+  await syncTrafficForVisit(profile.id).catch((error) => console.error("Syncing traffic failed:", error));
   const sites = await loadSites(profile.id);
 
   return (

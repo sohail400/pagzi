@@ -1,11 +1,11 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { hasFullAccess, selectAccess } from "@/lib/access";
 import { requireUser } from "@/lib/auth";
 import { getConnection, revokeToken } from "@/lib/google";
-import { USERNAME_PATTERN, pageIsLive } from "@/lib/profile";
+import { USERNAME_PATTERN } from "@/lib/profile";
+import { refreshOwnerPages } from "@/lib/refresh";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function updateUsername(previousState, formData) {
@@ -16,15 +16,20 @@ export async function updateUsername(previousState, formData) {
     return { error: "Usernames need 3–30 characters: lowercase letters, numbers, - or _ (starting with a letter or number)." };
   }
 
-  const { error } = await supabase.from("profiles").update({ username }).eq("id", userId);
+  const { data: saved, error } = await supabase
+    .from("profiles")
+    .update({ username })
+    .eq("id", userId)
+    .select("published_at")
+    .maybeSingle();
   if (error) {
     if (error.code === "23505") return { error: "That username is already taken. Please choose another one." };
     if (error.code === "23514") return { error: "That username isn't available. Please choose another one." };
     return { error: "We couldn't update your username. Please try again." };
   }
 
-  revalidatePath("/", "layout");
-  return { success: true, username, live: await pageIsLive(supabase, userId) };
+  refreshOwnerPages(username);
+  return { success: true, username, live: Boolean(saved?.published_at) };
 }
 
 function checkedDomain(value) {
@@ -54,7 +59,12 @@ export async function updateCustomDomain(previousState, formData) {
   const checked = checkedDomain(formData.get("domain"));
   if (checked.error) return checked;
 
-  const { error } = await supabase.from("profiles").update({ custom_domain: checked.domain }).eq("id", userId);
+  const { data: saved, error } = await supabase
+    .from("profiles")
+    .update({ custom_domain: checked.domain })
+    .eq("id", userId)
+    .select("username, published_at")
+    .maybeSingle();
   if (error) {
     if (error.code === "23505") return { error: "That domain is already used on another page." };
     if (error.code === "23514") return { error: "Enter a domain like example.com." };
@@ -64,8 +74,8 @@ export async function updateCustomDomain(previousState, formData) {
     return { error: "We couldn't save that domain. Please try again." };
   }
 
-  revalidatePath("/", "layout");
-  return { success: true, domain: checked.domain ?? "", live: await pageIsLive(supabase, userId) };
+  refreshOwnerPages(saved?.username);
+  return { success: true, domain: checked.domain ?? "", live: Boolean(saved?.published_at) };
 }
 
 async function removeOwnedFiles(admin, bucket, userId) {

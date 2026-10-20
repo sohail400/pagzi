@@ -1,9 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireFullAccess } from "@/lib/payments";
 import { profileDetailsReady, selectProfile } from "@/lib/profile";
+import { refreshOwnerPages } from "@/lib/refresh";
 
 export async function publishPage() {
   const { supabase, userId } = await requireFullAccess();
@@ -17,6 +17,6 @@ export async function publishPage() {
     redirect("/publish?error=save");
   }
 
-  revalidatePath("/", "layout");
+  refreshOwnerPages(profile.username);
   redirect("/publish?done=1");
 }

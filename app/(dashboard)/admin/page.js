@@ -1,6 +1,5 @@
 import { headers } from "next/headers";
-import { requireUser } from "@/lib/auth";
-import { fetchProfile } from "@/lib/profile";
+import { loadOwner } from "@/lib/auth";
 import ProfileForm from "./ProfileForm";
 
 export const metadata = {
@@ -8,9 +7,7 @@ export const metadata = {
 };
 
 export default async function AdminPage() {
-  const { supabase, userId } = await requireUser();
-  const { data: profile, error } = await fetchProfile(supabase, userId);
-  if (error) console.error("Loading profile failed:", error);
+  const { profile } = await loadOwner();
 
   const requestHeaders = await headers();
   const protocol = requestHeaders.get("x-forwarded-proto") ?? "http";

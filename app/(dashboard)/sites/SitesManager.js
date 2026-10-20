@@ -192,20 +192,44 @@ function previewCard(site, draft) {
   };
 }
 
-export default function SitesManager({ connection, properties, sites, profile, notice }) {
+export default function SitesManager({ connection, sites, profile, notice }) {
   const [state, formAction, isPending] = useActionState(updateSites, null);
   const [pendingKey, setPendingKey] = useState(null);
   const [drafts, setDrafts] = useState({});
   const [previewOpen, setPreviewOpen] = useState(false);
   const [liveNotice, setLiveNotice] = useState(false);
+  const [google, setGoogle] = useState(null);
 
   useEffect(() => {
     if (state?.success && state.live) setLiveNotice(true);
   }, [state]);
+
+  useEffect(() => {
+    if (!connection) return undefined;
+    let cancelled = false;
+    fetch("/api/google/properties")
+      .then(async (response) => {
+        if (!response.ok) throw new Error("properties");
+        return response.json();
+      })
+      .then((data) => {
+        if (!cancelled) setGoogle(data);
+      })
+      .catch(() => {
+        if (!cancelled) setGoogle({ failed: true, connection, properties: [] });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [connection]);
+
   const reportDraft = useCallback((property, draft) => {
     setDrafts((current) => ({ ...current, [property]: draft }));
   }, []);
 
+  const liveConnection = google?.connection || connection;
+  const properties = google?.properties ?? null;
+  const propertiesLoading = Boolean(connection) && !google;
   const addedProperties = new Set(sites.map((site) => site.property));
   const googleProperties = new Set((properties ?? []).map((item) => item.property));
   const rows = [
@@ -215,8 +239,14 @@ export default function SitesManager({ connection, properties, sites, profile, n
       .map((item) => ({ ...item, added: false, inGoogle: true })),
   ];
 
-  const message = state?.error ? { type: "error", text: state.error } : state ? null : notice;
-  const isConnected = connection?.status === "ok";
+  const message = state?.error
+    ? { type: "error", text: state.error }
+    : state
+      ? null
+      : google?.failed
+        ? { type: "info", text: "Google Search Console took too long to answer. Your saved sites are still here." }
+        : notice;
+  const isConnected = liveConnection?.status === "ok";
   const previewSites = sites.map((site) => previewCard(site, drafts[site.property]));
 
   function preview() {
@@ -246,12 +276,12 @@ export default function SitesManager({ connection, properties, sites, profile, n
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
               <p className="text-lg font-bold text-white">Google Search Console</p>
-              {connection ? (
+              {liveConnection ? (
                 <p className="mt-1 flex items-center gap-2 text-sm text-stone-300">
                   <span className={`h-2 w-2 shrink-0 rounded-full ${isConnected ? "bg-emerald-500" : "bg-amber-500"}`} />
                   <span className="truncate">
                     {isConnected ? "Connected" : "Needs attention"}
-                    {connection.email && ` as ${connection.email}`}
+                    {liveConnection.email && ` as ${liveConnection.email}`}
                   </span>
                 </p>
               ) : (
@@ -267,7 +297,7 @@ export default function SitesManager({ connection, properties, sites, profile, n
                   {connection ? "Reconnect Google" : "Connect Google Search Console"}
                 </a>
               )}
-              {connection && (
+              {liveConnection && (
                 <form
                   action={formAction}
                   onSubmit={(event) => {
@@ -288,14 +318,14 @@ export default function SitesManager({ connection, properties, sites, profile, n
             </div>
           </div>
 
-          {connection?.status === "revoked" && (
+          {liveConnection?.status === "revoked" && (
             <div className="mt-5">
               <Notice type="error">
                 Google access has expired or was removed from your Google account. Please reconnect to keep your traffic up to date.
               </Notice>
             </div>
           )}
-          {connection?.status === "error" && (
+          {liveConnection?.status === "error" && (
             <div className="mt-5">
               <Notice type="error">We couldn’t reach Google Search Console just now. Please refresh the page to try again.</Notice>
             </div>
@@ -328,7 +358,9 @@ export default function SitesManager({ connection, properties, sites, profile, n
             </ul>
           ) : (
             <p className="py-8 text-center text-sm leading-6 text-stone-300">
-              {isConnected ? (
+              {propertiesLoading ? (
+                "Loading your Search Console sites…"
+              ) : isConnected ? (
                 <>
                   No verified sites found in this Google account.{" "}
                   <a

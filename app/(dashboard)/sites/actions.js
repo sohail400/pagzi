@@ -1,12 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { requireFullAccess } from "@/lib/payments";
 import { deleteConnection, getConnection, isAccessRevoked, listProperties, revokeToken } from "@/lib/google";
 import { descriptionError, normalizeDescription } from "@/lib/description";
 import { CATEGORY_VALUES, CHART_VALUES, STATUS_VALUES } from "@/lib/site-fields";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { pageIsLive } from "@/lib/profile";
+import { syncStaleSites } from "@/lib/traffic";
 
 const MAX_SITES = 10;
 const LOGO_TYPES = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
@@ -88,7 +89,9 @@ async function addSite(userId, property, fields) {
     .single();
   if (error) throw error;
 
-  await syncStaleSites(userId).catch((syncError) => console.error("Syncing new site failed:", syncError));
+  after(() => {
+    syncStaleSites(userId).catch((syncError) => console.error("Syncing new site failed:", syncError));
+  });
   return { siteId: site.id };
 }
 
@@ -167,8 +170,8 @@ export async function updateSites(prevState, formData) {
 
   revalidatePath("/sites");
   revalidatePath("/style");
-  const { data: profile } = await supabase.from("profiles").select("username").eq("id", userId).maybeSingle();
+  const { data: profile } = await supabase.from("profiles").select("username, published_at").eq("id", userId).maybeSingle();
   if (profile?.username) revalidatePath(`/${profile.username}`);
   const changed = intent === "add" || intent === "save" || intent === "remove";
-  return { success: true, live: changed && (await pageIsLive(supabase, userId)) };
+  return { success: true, live: changed && Boolean(profile?.published_at) };
 }

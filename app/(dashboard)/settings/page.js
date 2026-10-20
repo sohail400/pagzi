@@ -1,8 +1,7 @@
-import { requireUser } from "@/lib/auth";
+import { loadOwner } from "@/lib/auth";
 import { hasFullAccess, isBuilderAccount } from "@/lib/access";
 import { planOption } from "@/lib/plans";
 import { earlySpotCount } from "@/lib/payments";
-import { selectProfile } from "@/lib/profile";
 import SettingsPanel from "./SettingsPanel";
 
 export const metadata = {
@@ -22,27 +21,21 @@ function dateLabel(value) {
 
 export default async function SettingsPage({ searchParams }) {
   const { checkout, plan: requestedPlan } = await searchParams;
-  const { supabase, userId } = await requireUser();
-  const { data, error } = await selectProfile(
-    supabase,
-    userId,
-    "username, custom_domain, paid_at, plan, plan_expires_at, dodo_customer_id",
-  );
+  const { profile, profileError } = await loadOwner();
 
-  let username = data?.username ?? "";
-  let customDomain = data?.custom_domain ?? "";
+  let username = profile?.username ?? "";
+  let customDomain = profile?.custom_domain ?? "";
   let builder = isBuilderAccount(username);
-  let paid = hasFullAccess(data) || builder;
-  let currentPlan = data?.plan || "";
-  let expiresLabel = currentPlan === "year" ? dateLabel(data?.plan_expires_at) : "";
-  let hasReceipts = Boolean(data?.dodo_customer_id);
+  let paid = hasFullAccess(profile) || builder;
+  let currentPlan = profile?.plan || "";
+  let expiresLabel = currentPlan === "year" ? dateLabel(profile?.plan_expires_at) : "";
+  let hasReceipts = Boolean(profile?.dodo_customer_id);
 
-  if (error) {
-    const fallback = await supabase.from("profiles").select("username").eq("id", userId).maybeSingle();
-    username = fallback.data?.username ?? "";
+  if (profileError) {
+    username = "";
     customDomain = "";
-    builder = isBuilderAccount(username);
-    paid = builder;
+    builder = false;
+    paid = false;
     currentPlan = "";
     expiresLabel = "";
     hasReceipts = false;
@@ -50,12 +43,14 @@ export default async function SettingsPage({ searchParams }) {
 
   let earlyLeft = 20;
   let earlySoldOut = false;
-  try {
-    const spots = await earlySpotCount();
-    earlyLeft = spots.left;
-    earlySoldOut = spots.soldOut;
-  } catch (spotError) {
-    console.error("Counting Early spots failed:", spotError);
+  if (!paid) {
+    try {
+      const spots = await earlySpotCount();
+      earlyLeft = spots.left;
+      earlySoldOut = spots.soldOut;
+    } catch (spotError) {
+      console.error("Counting Early spots failed:", spotError);
+    }
   }
 
   const selected = planOption(requestedPlan);

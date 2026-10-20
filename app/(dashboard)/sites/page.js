@@ -1,6 +1,6 @@
-import { requireUser } from "@/lib/auth";
-import { getConnection, isAccessRevoked, listProperties } from "@/lib/google";
-import { selectProfile, socialLinksOf } from "@/lib/profile";
+import { loadOwner, requireUser } from "@/lib/auth";
+import { getConnection } from "@/lib/google";
+import { socialLinksOf } from "@/lib/profile";
 import { inkFor, STYLE_DEFAULTS } from "@/lib/style";
 import { getSitesWithTraffic } from "@/lib/traffic";
 import SitesManager from "./SitesManager";
@@ -33,63 +33,46 @@ function withTimeout(promise, milliseconds) {
   ]);
 }
 
-async function loadGoogle(userId) {
-  let connection;
-  try {
-    connection = await withTimeout(getConnection(userId), 8000);
-  } catch (error) {
-    console.error("Loading Google connection failed:", error);
-    return { connection: null, properties: null, googleWarning: "Google Search Console took too long to answer. Your saved sites are still here." };
-  }
-  if (!connection) return { connection: null, properties: null, googleWarning: null };
-
-  try {
-    const properties = await withTimeout(listProperties(connection.refreshToken), 8000);
-    return { connection: { email: connection.email, status: "ok" }, properties, googleWarning: null };
-  } catch (error) {
-    if (!isAccessRevoked(error)) console.error("Listing Search Console sites failed:", error);
-    const status = isAccessRevoked(error) ? "revoked" : "error";
-    return {
-      connection: { email: connection.email, status },
-      properties: null,
-      googleWarning: status === "revoked" ? null : "Google Search Console took too long to answer. Your saved sites are still here.",
-    };
-  }
-}
-
 export default async function SitesPage({ searchParams }) {
-  const { supabase, userId } = await requireUser();
-  const { google } = await searchParams;
-
-  const profileColumns =
-    "name, bio, location, avatar_url, x_url, linkedin_url, instagram_url, youtube_url, github_url, email_url, chart_clicks, chart_impressions, font_style, card_color, page_color, text_color, share_color";
-  const [{ connection, properties, googleWarning }, profile, sitesResult] = await Promise.all([
-    loadGoogle(userId),
-    selectProfile(supabase, userId, profileColumns),
-    getSitesWithTraffic(supabase, userId)
-      .then((sites) => ({ sites, error: null }))
-      .catch((error) => {
-        console.error("Loading sites failed:", error);
-        return { sites: null, error };
+  const sessionPromise = requireUser();
+  const ownerPromise = loadOwner();
+  const [owner, connection, sitesResult, query] = await Promise.all([
+    ownerPromise,
+    sessionPromise.then(({ userId }) =>
+      withTimeout(getConnection(userId), 8000).catch((error) => {
+        console.error("Loading Google connection failed:", error);
+        return null;
       }),
+    ),
+    sessionPromise.then(({ supabase, userId }) =>
+      getSitesWithTraffic(supabase, userId)
+        .then((sites) => ({ sites, error: null }))
+        .catch((error) => {
+          console.error("Loading sites failed:", error);
+          return { sites: null, error };
+        }),
+    ),
+    searchParams,
   ]);
+  const { google } = query;
+  const { profile } = owner;
   const sites = sitesResult.sites;
   const sitesError = sitesResult.error;
-  const profileRow = profile.data;
   const previewProfile = {
-    name: profileRow?.name || "Your name",
-    bio: profileRow?.bio || "",
-    location: profileRow?.location || "",
-    avatarUrl: profileRow?.avatar_url || "",
-    links: socialLinksOf(profileRow ?? {}),
-    chartClicks: profileRow?.chart_clicks || STYLE_DEFAULTS.chartClicks,
-    chartImpressions: profileRow?.chart_impressions || STYLE_DEFAULTS.chartImpressions,
-    font: profileRow?.font_style || STYLE_DEFAULTS.font,
-    card: profileRow?.card_color || STYLE_DEFAULTS.card,
-    page: profileRow?.page_color || STYLE_DEFAULTS.page,
-    text: inkFor(profileRow?.page_color || STYLE_DEFAULTS.page, profileRow?.text_color),
-    share: profileRow?.share_color || STYLE_DEFAULTS.share,
+    name: profile?.name || "Your name",
+    bio: profile?.bio || "",
+    location: profile?.location || "",
+    avatarUrl: profile?.avatar_url || "",
+    links: socialLinksOf(profile ?? {}),
+    chartClicks: profile?.chart_clicks || STYLE_DEFAULTS.chartClicks,
+    chartImpressions: profile?.chart_impressions || STYLE_DEFAULTS.chartImpressions,
+    font: profile?.font_style || STYLE_DEFAULTS.font,
+    card: profile?.card_color || STYLE_DEFAULTS.card,
+    page: profile?.page_color || STYLE_DEFAULTS.page,
+    text: inkFor(profile?.page_color || STYLE_DEFAULTS.page, profile?.text_color),
+    share: profile?.share_color || STYLE_DEFAULTS.share,
   };
+  const googleConnection = connection ? { email: connection.email, status: "ok" } : null;
 
   return (
     <main className="px-4 py-8 sm:px-8 lg:px-10 lg:py-10">
@@ -107,11 +90,10 @@ export default async function SitesPage({ searchParams }) {
           </p>
         ) : (
           <SitesManager
-            connection={connection}
-            properties={properties}
+            connection={googleConnection}
             sites={sites}
             profile={previewProfile}
-            notice={NOTICES[google] ?? (googleWarning ? { type: "info", text: googleWarning } : null)}
+            notice={NOTICES[google] ?? null}
           />
         )}
       </div>

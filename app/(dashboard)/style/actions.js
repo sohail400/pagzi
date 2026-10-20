@@ -1,9 +1,9 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { revalidatePath } from "next/cache";
 import { requireFullAccess } from "@/lib/payments";
-import { STYLE_SAVED_COOKIE, pageIsLive } from "@/lib/profile";
+import { STYLE_SAVED_COOKIE } from "@/lib/profile";
+import { refreshOwnerPages } from "@/lib/refresh";
 import { FONTS, normalizeHex } from "@/lib/style";
 
 export async function updateStyle(previousState, formData) {
@@ -20,7 +20,7 @@ export async function updateStyle(previousState, formData) {
   if (!card || !page || !text || !share) return { error: "Pick a theme and a card color." };
   if (!FONTS.some((item) => item.id === font)) return { error: "Pick a font from the list." };
 
-  const { error } = await supabase
+  const { data: saved, error } = await supabase
     .from("profiles")
     .update({
       chart_clicks: chartClicks,
@@ -31,7 +31,9 @@ export async function updateStyle(previousState, formData) {
       text_color: text,
       share_color: share,
     })
-    .eq("id", userId);
+    .eq("id", userId)
+    .select("username, published_at")
+    .maybeSingle();
 
   if (error) {
     console.error("Saving page style failed:", error);
@@ -43,6 +45,6 @@ export async function updateStyle(previousState, formData) {
 
   const cookieStore = await cookies();
   cookieStore.set(STYLE_SAVED_COOKIE, "1", { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 365 });
-  revalidatePath("/", "layout");
-  return { success: true, live: await pageIsLive(supabase, userId) };
+  refreshOwnerPages(saved?.username);
+  return { success: true, live: Boolean(saved?.published_at) };
 }
