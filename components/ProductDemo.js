@@ -7,6 +7,8 @@ import { startDemoClock } from "@/components/demoClock";
 import SocialLinks from "@/components/SocialLinks";
 import { STYLE_DEFAULTS } from "@/lib/style";
 
+const SPEED = 2;
+
 const MARKS = {
   nameClick: 700,
   nameEnd: 2600,
@@ -74,7 +76,7 @@ export default function ProductDemo({ profile, site, sample = false }) {
   useEffect(() => {
     if (!playing) return undefined;
     return startDemoClock(stageRef, (step) => {
-      setElapsed((current) => (current + step >= MARKS.end ? 0 : current + step));
+      setElapsed((current) => (current + step * SPEED >= MARKS.end ? 0 : current + step * SPEED));
     });
   }, [playing]);
 
