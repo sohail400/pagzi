@@ -1,7 +1,7 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { authOrigin, rememberPlan } from "@/lib/confirm-link";
 import { billingPath } from "@/lib/plans";
 import { createClient } from "@/lib/supabase/server";
 
@@ -35,14 +35,14 @@ export async function signup(previousState, formData) {
   if (password.length < 8) return { error: "Your password must be at least 8 characters.", values };
   if (formData.get("terms") !== "on") return { error: "Please accept the terms and privacy policy.", values };
 
-  const origin = (await headers()).get("origin");
+  const origin = await authOrigin();
   const destination = billingPath(formData.get("plan"));
-  const confirmNext = destination === "/admin" ? "" : `?next=${encodeURIComponent(destination)}`;
+  await rememberPlan(formData.get("plan"));
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { name }, emailRedirectTo: `${origin}/auth/confirm${confirmNext}` },
+    options: { data: { name }, emailRedirectTo: `${origin}/auth/confirm` },
   });
 
   if (error) return { error: friendlyError(error), values };
@@ -72,10 +72,10 @@ export async function requestPasswordReset(previousState, formData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   if (!EMAIL_PATTERN.test(email)) return { error: "Please enter a valid email address.", values: { email } };
 
-  const origin = (await headers()).get("origin");
+  const origin = await authOrigin();
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/auth/confirm?next=/reset-password`,
+    redirectTo: `${origin}/auth/confirm/recovery`,
   });
 
   if (error) return { error: friendlyError(error), values: { email } };
