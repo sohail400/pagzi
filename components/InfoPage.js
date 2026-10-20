@@ -6,9 +6,9 @@ export default function InfoPage({ title, children }) {
   return (
     <div className="min-h-screen bg-[#1F1F1F] font-sans text-stone-100">
       <header className="navbar mx-auto max-w-6xl px-5 py-5 sm:px-8">
-        <Link href="/" className="link flex items-center gap-2 text-lg font-bold tracking-tight text-white no-underline" aria-label="pagzi.online home">
+        <Link href="/" className="link flex items-center gap-2 text-lg font-bold tracking-tight text-white no-underline" aria-label="Pagzi home">
           <BrandMark />
-          pagzi.online
+          Pagzi
         </Link>
       </header>
       <main className="mx-auto max-w-2xl px-5 py-12 sm:px-8 sm:py-16">

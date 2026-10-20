@@ -11,9 +11,9 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen bg-[#1F1F1F] font-sans text-stone-100">
       <div className="navbar mx-auto max-w-6xl px-5 py-5 sm:px-8">
         <div className="navbar-start">
-          <Link href="/" className="link flex items-center gap-2 text-lg font-bold tracking-tight no-underline" aria-label="pagzi.online home">
+          <Link href="/" className="link flex items-center gap-2 text-lg font-bold tracking-tight no-underline" aria-label="Pagzi home">
             <BrandMark />
-            pagzi.online
+            Pagzi
           </Link>
         </div>
       </div>

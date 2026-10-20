@@ -30,9 +30,9 @@ export default function DashboardLayout({ user, locked = false, showPublish = fa
     <div className="min-h-screen bg-[#1F1F1F] font-sans text-stone-100">
       <div className="mx-auto flex min-h-screen max-w-[1440px]">
         <aside className="hidden w-64 shrink-0 flex-col border-r border-white/10 bg-[#1F1F1F] px-5 py-6 lg:flex">
-          <Link href="/" className="link flex items-center gap-2 px-2 text-lg font-bold tracking-tight text-white no-underline">
+          <Link href="/" className="link flex items-center gap-2 px-2 text-lg font-bold tracking-tight text-white no-underline" aria-label="Pagzi home">
             <BrandMark />
-            pagzi.online
+            Pagzi
           </Link>
 
           <div className="mt-10">
@@ -81,9 +81,9 @@ export default function DashboardLayout({ user, locked = false, showPublish = fa
         <div className="min-w-0 flex-1">
           <div className="border-b border-white/10 bg-[#1F1F1F] px-4 py-4 lg:hidden">
             <div className="flex items-center justify-between">
-              <Link href="/" className="link flex items-center gap-2 text-lg font-bold text-white no-underline">
+              <Link href="/" className="link flex items-center gap-2 text-lg font-bold text-white no-underline" aria-label="Pagzi home">
                 <BrandMark />
-                pagzi.online
+                Pagzi
               </Link>
               <form action={logout}>
                 <button type="submit" className="btn btn-ghost btn-sm rounded-full text-stone-300">

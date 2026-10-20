@@ -25,10 +25,10 @@ export default async function LoginPage({ searchParams }) {
           <Link
             href="/"
             className="link flex items-center gap-2 text-lg font-bold tracking-tight no-underline"
-            aria-label="pagzi.online home"
+            aria-label="Pagzi home"
           >
             <BrandMark />
-            pagzi.online
+            Pagzi
           </Link>
         </div>
         <div className="navbar-end gap-2 text-sm text-stone-500">

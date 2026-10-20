@@ -58,9 +58,9 @@ export default async function SiteFooter() {
       <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
         <div className="grid gap-10 sm:grid-cols-2">
           <nav aria-label="Pages">
-            <Link href="/" className="inline-flex items-center gap-2 text-base font-bold text-white">
+            <Link href="/" className="inline-flex items-center gap-2 text-base font-bold text-white" aria-label="Pagzi home">
               <BrandMark />
-              pagzi.online
+              Pagzi
             </Link>
             <ul className="mt-4 space-y-2.5">
               {PAGES.map((item) => (

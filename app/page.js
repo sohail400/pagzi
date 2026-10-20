@@ -170,10 +170,10 @@ export default async function LandingPage() {
           <a
             href="#top"
             className="link flex items-center gap-2 text-lg font-bold tracking-tight text-white no-underline"
-            aria-label="pagzi.online home"
+            aria-label="Pagzi home"
           >
             <BrandMark />
-            pagzi.online
+            Pagzi
           </a>
         </div>
         <div className="navbar-end gap-5">
