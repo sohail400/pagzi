@@ -26,6 +26,7 @@ const STEPS = [
 ];
 
 const END = 28000;
+const SPEED = 2;
 
 function clock(ms) {
   const total = Math.min(END, Math.max(0, Math.round(ms / 1000)));
@@ -110,7 +111,7 @@ export default function StyleDemo({ profile, site, style }) {
   useEffect(() => {
     if (!playing) return undefined;
     return startDemoClock(stageRef, (step) => {
-      setElapsed((current) => (current + step >= END ? 0 : current + step));
+      setElapsed((current) => (current + step * SPEED >= END ? 0 : current + step * SPEED));
     });
   }, [playing]);
 
