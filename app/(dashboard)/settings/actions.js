@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { hasFullAccess, selectAccess } from "@/lib/access";
 import { requireUser } from "@/lib/auth";
 import { getConnection, revokeToken } from "@/lib/google";
-import { USERNAME_PATTERN } from "@/lib/profile";
+import { USERNAME_PATTERN, unpublishPage } from "@/lib/profile";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function updateUsername(previousState, formData) {
@@ -24,6 +24,7 @@ export async function updateUsername(previousState, formData) {
   }
 
   revalidatePath("/", "layout");
+  await unpublishPage(supabase, userId);
   return { success: true, username };
 }
 

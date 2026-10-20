@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireFullAccess } from "@/lib/payments";
-import { LIMITS, SOCIAL_LINKS, USERNAME_PATTERN, fetchProfile } from "@/lib/profile";
+import { LIMITS, SOCIAL_LINKS, USERNAME_PATTERN, fetchProfile, unpublishPage } from "@/lib/profile";
 
 const AVATAR_TYPES = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
@@ -98,6 +98,7 @@ export async function updateProfile(previousState, formData) {
     if (newAvatarPath) await supabase.storage.from("avatars").remove([newAvatarPath]);
     return { error: databaseError(updateError) };
   }
+  await unpublishPage(supabase, userId);
 
   const { data: saved, error } = await fetchProfile(supabase, userId);
 

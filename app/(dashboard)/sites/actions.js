@@ -6,7 +6,7 @@ import { deleteConnection, getConnection, isAccessRevoked, listProperties, revok
 import { descriptionError, normalizeDescription } from "@/lib/description";
 import { CATEGORY_VALUES, CHART_VALUES, STATUS_VALUES } from "@/lib/site-fields";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { syncStaleSites } from "@/lib/traffic";
+import { unpublishPage } from "@/lib/profile";
 
 const MAX_SITES = 10;
 const LOGO_TYPES = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
@@ -135,7 +135,10 @@ export async function updateSites(prevState, formData) {
       }
 
       const stored = await storeLogo(admin, userId, siteId, formData.get("logo"));
-      if (stored.error) return stored;
+      if (stored.error) {
+        await unpublishPage(supabase, userId);
+        return stored;
+      }
       if (stored.logoUrl) {
         const { error } = await admin.from("sites").update({ logo_url: stored.logoUrl }).eq("id", siteId);
         if (error) throw error;
@@ -159,6 +162,9 @@ export async function updateSites(prevState, formData) {
       await deleteConnection(userId);
     } else {
       return { error: "Something went wrong. Please refresh the page." };
+    }
+    if (intent === "add" || intent === "save" || intent === "remove") {
+      await unpublishPage(supabase, userId);
     }
   } catch (error) {
     console.error("Updating sites failed:", error);
