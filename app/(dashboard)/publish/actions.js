@@ -10,9 +10,6 @@ export async function publishPage() {
   const { data: profile } = await selectProfile(supabase, userId, "username, name, bio, location");
   if (!profileDetailsReady(profile)) redirect("/admin");
 
-  const sites = await supabase.from("sites").select("id", { count: "exact", head: true }).eq("user_id", userId);
-  if (!sites.count) redirect("/sites");
-
   const { error } = await supabase.from("profiles").update({ published_at: new Date().toISOString() }).eq("id", userId);
   if (error) {
     console.error("Publishing a page failed:", error);

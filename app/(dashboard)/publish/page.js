@@ -10,23 +10,22 @@ export const metadata = {
 
 export default async function PublishPage({ searchParams }) {
   const { supabase, userId } = await requireUser();
-  const [{ data: profile }, sites, cookieStore, query] = await Promise.all([
+  const [{ data: profile }, cookieStore, query] = await Promise.all([
     selectProfile(supabase, userId, "username, name, bio, location, published_at"),
-    supabase.from("sites").select("id", { count: "exact", head: true }).eq("user_id", userId),
     cookies(),
     searchParams,
   ]);
   const { done, error } = await query;
   const published = Boolean(profile?.published_at) || done === "1";
   const styleSaved = cookieStore.get(STYLE_SAVED_COOKIE)?.value === "1";
-  const ready = profileDetailsReady(profile) && (sites.count ?? 0) > 0 && styleSaved;
+  const ready = profileDetailsReady(profile) && styleSaved;
   const publicPath = profile?.username ? `/${profile.username}` : "";
 
   return (
     <main className="px-4 py-8 sm:px-8 lg:px-10 lg:py-10">
       <div className="mx-auto max-w-xl">
         <p className="text-3xl font-bold tracking-[-0.035em] text-white">Publish</p>
-        <p className="mt-2 text-sm leading-6 text-stone-400">Put your page online when the profile, websites, and style are ready.</p>
+        <p className="mt-2 text-sm leading-6 text-stone-400">Put your page online when the profile and style are ready. A website can be added later.</p>
 
         <div className="card mt-8 rounded-3xl border border-white/10 bg-[#1F1F1F]">
           <div className="card-body gap-4 p-6 sm:p-8">
@@ -43,7 +42,7 @@ export default async function PublishPage({ searchParams }) {
             ) : ready ? (
               <>
                 <p className="text-sm leading-6 text-stone-300">
-                  Your name, bio, location, website, and style are saved. Publishing makes this page public.
+                  Your name, bio, location, and style are saved. Publishing makes this page public.
                 </p>
                 {error === "setup" && (
                   <p role="alert" className="text-sm text-red-300">
@@ -66,7 +65,6 @@ export default async function PublishPage({ searchParams }) {
                 <p className="text-sm leading-6 text-stone-300">Finish these steps and the Publish tab will stay here.</p>
                 <ul className="space-y-2 text-sm text-stone-200">
                   <li>{profileDetailsReady(profile) ? "Profile saved" : "Add your name, username, bio, and location"}</li>
-                  <li>{(sites.count ?? 0) > 0 ? "Website added" : "Add at least one website"}</li>
                   <li>{styleSaved ? "Style saved" : "Save your colors and text on the Style tab"}</li>
                 </ul>
               </>
