@@ -2,6 +2,7 @@
 
 import { useActionState, useCallback, useEffect, useState } from "react";
 import PagePhone from "@/components/PagePhone";
+import LiveUpdateDialog from "@/components/LiveUpdateDialog";
 import SiteLogo from "@/components/SiteLogo";
 import { wordCount } from "@/lib/description";
 import { CATEGORIES, CHARTS, STATUSES } from "@/lib/site-fields";
@@ -196,6 +197,11 @@ export default function SitesManager({ connection, properties, sites, profile, n
   const [pendingKey, setPendingKey] = useState(null);
   const [drafts, setDrafts] = useState({});
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [liveNotice, setLiveNotice] = useState(false);
+
+  useEffect(() => {
+    if (state?.success && state.live) setLiveNotice(true);
+  }, [state]);
   const reportDraft = useCallback((property, draft) => {
     setDrafts((current) => ({ ...current, [property]: draft }));
   }, []);
@@ -231,6 +237,7 @@ export default function SitesManager({ connection, properties, sites, profile, n
 
   return (
     <div className="grid items-start gap-6 pb-24 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:pb-0">
+      <LiveUpdateDialog open={liveNotice && !isPending} onClose={() => setLiveNotice(false)} />
       <div className="space-y-6">
       {message && <Notice type={message.type}>{message.text}</Notice>}
 

@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { hasFullAccess, selectAccess } from "@/lib/access";
 import { requireUser } from "@/lib/auth";
 import { getConnection, revokeToken } from "@/lib/google";
-import { USERNAME_PATTERN, unpublishPage } from "@/lib/profile";
+import { USERNAME_PATTERN, pageIsLive } from "@/lib/profile";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function updateUsername(previousState, formData) {
@@ -24,8 +24,7 @@ export async function updateUsername(previousState, formData) {
   }
 
   revalidatePath("/", "layout");
-  await unpublishPage(supabase, userId);
-  return { success: true, username };
+  return { success: true, username, live: await pageIsLive(supabase, userId) };
 }
 
 function checkedDomain(value) {
@@ -66,7 +65,7 @@ export async function updateCustomDomain(previousState, formData) {
   }
 
   revalidatePath("/", "layout");
-  return { success: true, domain: checked.domain ?? "" };
+  return { success: true, domain: checked.domain ?? "", live: await pageIsLive(supabase, userId) };
 }
 
 async function removeOwnedFiles(admin, bucket, userId) {

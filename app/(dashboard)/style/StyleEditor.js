@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import LiveUpdateDialog from "@/components/LiveUpdateDialog";
 import PagePhone from "@/components/PagePhone";
 import { ColorField, FontPicker, ThemeGrid, ThemeSwatch } from "@/components/StyleControls";
 import { CARD_SWATCHES, CHART_PRESETS, normalizeHex, presetFor } from "@/lib/style";
@@ -18,6 +19,11 @@ export default function StyleEditor({ saved, sites }) {
   const [text, setText] = useState(saved.text);
   const [share, setShare] = useState(saved.share);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [liveNotice, setLiveNotice] = useState(false);
+
+  useEffect(() => {
+    if (state?.success && state.live) setLiveNotice(true);
+  }, [state]);
   const selected = presetFor(clicks, impressions);
   function preview() {
     return (
@@ -49,13 +55,14 @@ export default function StyleEditor({ saved, sites }) {
 
   return (
     <form action={formAction} className="grid items-start gap-6 pb-24 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:pb-0">
+      <LiveUpdateDialog open={liveNotice && !pending} onClose={() => setLiveNotice(false)} />
       <div className="space-y-6">
         {state?.error && (
           <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {state.error}
           </p>
         )}
-        {state?.success && (
+        {state?.success && !state.live && (
           <p role="status" className="rounded-xl border border-[#ff4fa3] bg-[#ff4fa3] px-4 py-3 text-sm text-white">
             Saved. Your public page is using this style.
           </p>

@@ -6,7 +6,7 @@ import { deleteConnection, getConnection, isAccessRevoked, listProperties, revok
 import { descriptionError, normalizeDescription } from "@/lib/description";
 import { CATEGORY_VALUES, CHART_VALUES, STATUS_VALUES } from "@/lib/site-fields";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { unpublishPage } from "@/lib/profile";
+import { pageIsLive } from "@/lib/profile";
 
 const MAX_SITES = 10;
 const LOGO_TYPES = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
@@ -135,10 +135,7 @@ export async function updateSites(prevState, formData) {
       }
 
       const stored = await storeLogo(admin, userId, siteId, formData.get("logo"));
-      if (stored.error) {
-        await unpublishPage(supabase, userId);
-        return stored;
-      }
+      if (stored.error) return stored;
       if (stored.logoUrl) {
         const { error } = await admin.from("sites").update({ logo_url: stored.logoUrl }).eq("id", siteId);
         if (error) throw error;
@@ -163,9 +160,6 @@ export async function updateSites(prevState, formData) {
     } else {
       return { error: "Something went wrong. Please refresh the page." };
     }
-    if (intent === "add" || intent === "save" || intent === "remove") {
-      await unpublishPage(supabase, userId);
-    }
   } catch (error) {
     console.error("Updating sites failed:", error);
     return { error: "Something went wrong. Please try again." };
@@ -175,5 +169,6 @@ export async function updateSites(prevState, formData) {
   revalidatePath("/style");
   const { data: profile } = await supabase.from("profiles").select("username").eq("id", userId).maybeSingle();
   if (profile?.username) revalidatePath(`/${profile.username}`);
-  return { success: true };
+  const changed = intent === "add" || intent === "save" || intent === "remove";
+  return { success: true, live: changed && (await pageIsLive(supabase, userId)) };
 }

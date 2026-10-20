@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { logout } from "@/app/auth/actions";
 import { openBillingPortal } from "@/app/billing/actions";
+import LiveUpdateDialog from "@/components/LiveUpdateDialog";
 import PayButton from "@/components/PayButton";
 import { APP_DOMAIN, dnsName } from "@/lib/custom-domain";
 import { PLAN_OPTIONS } from "@/lib/plans";
@@ -139,9 +140,14 @@ export default function SettingsPanel({
   const [deleteState, deleteAction, deletePending] = useActionState(deleteAccount, null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [liveNotice, setLiveNotice] = useState(false);
   const currentUsername = nameState?.username || username || "";
   const pageAddress = `pagzi.online/${currentUsername || "username"}`;
   const savedDomain = domainState?.success ? domainState.domain : customDomain;
+
+  useEffect(() => {
+    if ((nameState?.success && nameState.live) || (domainState?.success && domainState.live)) setLiveNotice(true);
+  }, [nameState, domainState]);
 
   async function copyAddress() {
     if (!currentUsername) return;
@@ -156,6 +162,7 @@ export default function SettingsPanel({
 
   return (
     <div className="mx-auto max-w-xl">
+      <LiveUpdateDialog open={liveNotice && !namePending && !domainPending} onClose={() => setLiveNotice(false)} />
       <div className="mb-8 flex items-center justify-center gap-5">
         <Tab active={tab === "account"} onClick={() => setTab("account")}>
           Account

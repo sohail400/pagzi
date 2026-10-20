@@ -2,6 +2,7 @@
 
 import { startTransition, useActionState, useEffect, useRef, useState } from "react";
 import Avatar from "@/components/Avatar";
+import LiveUpdateDialog from "@/components/LiveUpdateDialog";
 import PagePhone from "@/components/PagePhone";
 import SocialLinks from "@/components/SocialLinks";
 import { LIMITS, SOCIAL_LINKS, socialLinksOf } from "@/lib/profile";
@@ -33,6 +34,7 @@ export default function ProfileForm({ profile, siteUrl }) {
   const [avatarPreview, setAvatarPreview] = useState(profile.avatar_url);
   const [photoError, setPhotoError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [liveNotice, setLiveNotice] = useState(false);
   const fileInputRef = useRef(null);
   const urlInputRef = useRef(null);
 
@@ -43,6 +45,7 @@ export default function ProfileForm({ profile, siteUrl }) {
     setValues(toFormValues(state.profile));
     setAvatarPreview(state.profile.avatar_url);
     if (fileInputRef.current) fileInputRef.current.value = "";
+    if (state.live) setLiveNotice(true);
   }, [state]);
 
   useEffect(() => {
@@ -259,7 +262,7 @@ export default function ProfileForm({ profile, siteUrl }) {
                   {state.error}
                 </p>
               )}
-              {state?.success && !pending && (
+              {state?.success && !pending && !state.live && (
                 <p role="status" className="mr-auto text-sm text-emerald-700">
                   Changes saved.
                 </p>
@@ -276,6 +279,7 @@ export default function ProfileForm({ profile, siteUrl }) {
         </div>
       </div>
 
+      <LiveUpdateDialog open={liveNotice && !pending} onClose={() => setLiveNotice(false)} />
       <div className="xl:sticky xl:top-8">
         <div className="mb-3 flex items-center justify-between">
           <p className="text-sm font-semibold text-stone-200">Page preview</p>
