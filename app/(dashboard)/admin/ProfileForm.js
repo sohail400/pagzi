@@ -34,6 +34,7 @@ export default function ProfileForm({ profile, siteUrl }) {
   const [photoError, setPhotoError] = useState("");
   const [copied, setCopied] = useState(false);
   const fileInputRef = useRef(null);
+  const urlInputRef = useRef(null);
 
   useEffect(() => {
     if (!state?.success) return;
@@ -75,13 +76,21 @@ export default function ProfileForm({ profile, siteUrl }) {
   }
 
   async function copyPublicUrl() {
+    let copiedUrl = false;
     try {
       await navigator.clipboard.writeText(publicUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      copiedUrl = true;
     } catch {
-      setCopied(false);
+      const input = urlInputRef.current;
+      if (input) {
+        input.focus();
+        input.select();
+        copiedUrl = document.execCommand("copy");
+      }
     }
+    if (!copiedUrl) return;
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2000);
   }
 
   const publicUrl = `${siteUrl}/${savedUsername || "your-username"}`;
@@ -222,6 +231,7 @@ export default function ProfileForm({ profile, siteUrl }) {
               <legend className="fieldset-legend pb-2 text-sm font-semibold text-stone-200">Public page URL</legend>
               <div className="join w-full">
                 <input
+                  ref={urlInputRef}
                   type="text"
                   readOnly
                   value={publicUrl}
@@ -231,8 +241,12 @@ export default function ProfileForm({ profile, siteUrl }) {
                 <button
                   type="button"
                   onClick={copyPublicUrl}
-                  disabled={!published}
-                  className="btn join-item h-11 rounded-r-xl border-white/15 bg-[#161616] px-5 text-stone-100 shadow-none hover:bg-white/10"
+                  aria-live="polite"
+                  className={`btn join-item h-11 min-w-24 rounded-r-xl border px-5 shadow-none ${
+                    copied
+                      ? "border-emerald-300 bg-emerald-300 text-[#1F1F1F] hover:border-emerald-200 hover:bg-emerald-200"
+                      : "border-white/15 bg-[#161616] text-stone-100 hover:border-white/30 hover:bg-white/15"
+                  }`}
                 >
                   {copied ? "Copied" : "Copy"}
                 </button>
