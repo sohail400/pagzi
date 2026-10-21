@@ -205,11 +205,11 @@ export default async function LandingPage() {
           <div className="order-1 lg:order-2">
             <h1 className="max-w-xl text-4xl font-bold leading-[1.05] tracking-[-0.045em] text-white sm:text-6xl">
               Show your real website growth.
-              <span className="mt-2 block">Not a screenshot.</span>
+              <span className="mt-2 block font-normal italic">Not a screenshot.</span>
             </h1>
             <p className="mt-6 max-w-lg text-base leading-7 text-stone-300 sm:text-lg">
-              Connect Google Search Console and get one public page with your real clicks and impressions. Share it with
-              your audience, clients, and buyers.
+              Turn your Google Search Console data into a beautiful public page. Showcase your growth, build credibility,
+              and stand out from the crowd with Pagzi.
             </p>
             <LandingClaim />
             <p className="mt-4 text-sm text-stone-500">
