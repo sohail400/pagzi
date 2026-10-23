@@ -3,11 +3,11 @@ import AnalyticsCard from "@/components/AnalyticsCard";
 import BrandMark from "@/components/BrandMark";
 import LandingClaim from "@/components/LandingClaim";
 import LandingPreview from "@/components/LandingPreview";
+import PricingCard from "@/components/PricingCard";
 import ProductDemo from "@/components/ProductDemo";
 import ShowcaseWall from "@/components/ShowcaseWall";
 import SiteFooter from "@/components/SiteFooter";
 import StyleDemo from "@/components/StyleDemo";
-import { PLAN_OPTIONS } from "@/lib/plans";
 import { EARLY_SPOT_LIMIT, earlySpotCount } from "@/lib/payments";
 import { PROFILE_COLUMNS, socialLinksOf } from "@/lib/profile";
 import { inkFor, STYLE_DEFAULTS } from "@/lib/style";
@@ -20,29 +20,6 @@ export const revalidate = 120;
 
 const PINK_BUTTON =
   "btn btn-save h-12 w-full rounded-xl border-0 px-7 font-semibold text-white shadow-none sm:w-auto";
-
-const FEATURES = [
-  "Build trust with verified Google Search Console data",
-  "Get a dofollow backlink to your website",
-  "Updates automatically",
-  "Share your indie hacking journey",
-  "Customize your charts, colors and fonts",
-  "Use your own custom domain",
-  "24 themes and 13 fonts",
-];
-
-function featureParts(line) {
-  const parts = [];
-  const pattern = /\*\*(.+?)\*\*/g;
-  let last = 0;
-  for (const match of line.matchAll(pattern)) {
-    if (match.index > last) parts.push({ text: line.slice(last, match.index), bold: false });
-    parts.push({ text: match[1], bold: true });
-    last = match.index + match[0].length;
-  }
-  if (last < line.length) parts.push({ text: line.slice(last), bold: false });
-  return parts;
-}
 
 function sampleDays() {
   return Array.from({ length: 365 }, (_, index) => {
@@ -144,21 +121,6 @@ async function loadEarlySpots() {
     console.error("Early spot count failed:", error?.code, error?.message, error?.details, error?.hint);
     return { left: EARLY_SPOT_LIMIT, soldOut: false };
   }
-}
-
-function Check() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-[#ff4fa3]">
-      <path
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M5 12.5 9.2 17 19 7"
-      />
-    </svg>
-  );
 }
 
 export default async function LandingPage() {
@@ -334,65 +296,7 @@ export default async function LandingPage() {
             <p className="mx-auto mt-4 max-w-lg text-center text-base leading-7 text-stone-300">
               No subscription.
             </p>
-            <div className="mt-12 grid items-stretch gap-4 lg:grid-cols-3">
-              {PLAN_OPTIONS.map((plan) => {
-                const soldOut = plan.id === "early" && early.soldOut;
-                return (
-                  <div
-                    key={plan.id}
-                    className={`flex h-full flex-col rounded-[2rem] bg-[#1F1F1F] p-7 sm:p-9 ${plan.limited ? "border border-[#ff4fa3]" : "border border-white/10"}`}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-semibold uppercase tracking-wider text-[#ff4fa3]">{plan.name}</p>
-                      {plan.limited && (
-                        <span className="rounded-full border border-[#ff4fa3] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#ff4fa3]">
-                          Limited
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-4 text-6xl font-bold tracking-[-0.05em] text-white">${plan.price}</p>
-                    <p className="mt-3 text-sm font-medium leading-6 text-white">{plan.detail}</p>
-                    {plan.id === "early" && (
-                      <p className="mt-2 text-sm leading-6 text-stone-400">
-                        {soldOut ? "Sold out" : `${early.left} of ${EARLY_SPOT_LIMIT} spots left`}
-                      </p>
-                    )}
-                    <div className="mt-auto pt-8">
-                      {soldOut ? (
-                        <button type="button" disabled className="btn btn-save h-12 w-full cursor-not-allowed rounded-xl border-0 px-7 font-semibold text-white shadow-none">
-                          Get my page
-                        </button>
-                      ) : (
-                        <Link href={`/signup?plan=${plan.id}`} className="btn btn-save h-12 w-full rounded-xl border-0 px-7 font-semibold text-white shadow-none">
-                          Get my page
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="mt-6 rounded-[2rem] bg-[#2A2A2A] p-7 sm:p-9">
-              <p className="text-2xl font-bold tracking-tight text-white">What you get</p>
-              <ul className="mt-6 space-y-3">
-                {FEATURES.map((line) => (
-                  <li key={line} className="flex items-start gap-3 text-base leading-7 text-stone-200">
-                    <Check />
-                    <span>
-                      {featureParts(line).map((part) =>
-                        part.bold ? (
-                          <span key={part.text} className="font-semibold text-white underline decoration-white/40 underline-offset-4">
-                            {part.text}
-                          </span>
-                        ) : (
-                          part.text
-                        )
-                      )}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <PricingCard earlyLeft={early.left} earlyLimit={EARLY_SPOT_LIMIT} soldOut={early.soldOut} />
           </div>
         </section>
       </main>
