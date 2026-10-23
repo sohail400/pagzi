@@ -158,7 +158,7 @@ export default async function ProfilePage({ params }) {
           )}
         </div>
       </div>
-      <div className="mt-10 flex justify-center">
+      <div className="fixed bottom-4 left-4 z-30">
         <a
           href={`https://pagzi.online?ref=badge&from=${encodeURIComponent(profile.username)}`}
           target="_blank"
