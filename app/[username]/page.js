@@ -142,6 +142,7 @@ export default async function ProfilePage({ params }) {
                 anonymous={site.anonymous}
                 siteUrl={site.anonymous ? "" : siteHref(site.name)}
                 name={site.anonymous ? "" : site.name}
+                verified={!site.anonymous}
                 description={site.anonymous ? "" : site.description}
                 logoUrl={site.anonymous ? "" : site.logo_url}
                 category={site.anonymous ? "" : site.category}

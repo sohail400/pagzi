@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import SiteLogo from "@/components/SiteLogo";
+import VerifiedTooltip from "@/components/VerifiedTooltip";
 import {
   BarController,
   BarElement,
@@ -194,6 +195,7 @@ export default function AnalyticsCard({
   mobileCompact = false,
   demo = false,
   bordered = true,
+  verified = false,
 }) {
   const [range, setRange] = useState(28);
   const [hiddenSeries, setHiddenSeries] = useState([]);
@@ -486,7 +488,22 @@ export default function AnalyticsCard({
               className={`${compact ? "h-7 w-7" : mobileCompact ? "col-start-1 row-start-1 h-7 w-7 lg:h-8 lg:w-8" : "h-8 w-8"} shrink-0 rounded-lg`}
             />
             <div className={compact ? "min-w-0 flex-1 space-y-0.5" : mobileCompact ? "contents lg:block lg:min-w-0 lg:flex-1 lg:space-y-1.5" : "min-w-0 flex-1 space-y-1.5"}>
-              {siteUrl ? (
+              {verified ? (
+                <VerifiedTooltip className={compact ? "block" : mobileCompact ? "col-start-2 row-start-1 min-w-0 lg:block" : "block"}>
+                  {siteUrl ? (
+                    <a
+                      href={siteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`block truncate font-semibold leading-none underline-offset-2 hover:underline ${compact ? "text-[13px]" : "text-sm"} ${darkCard ? "text-white" : "text-stone-800"}`}
+                    >
+                      {name}
+                    </a>
+                  ) : (
+                    <p className={`block truncate font-semibold leading-none ${compact ? "text-[13px]" : "text-sm"} ${darkCard ? "text-white" : "text-stone-800"}`}>{name}</p>
+                  )}
+                </VerifiedTooltip>
+              ) : siteUrl ? (
                 <a
                   href={siteUrl}
                   target="_blank"
