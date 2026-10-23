@@ -158,6 +158,17 @@ export default async function ProfilePage({ params }) {
           )}
         </div>
       </div>
+      <div className="mt-10 flex justify-center">
+        <a
+          href={`https://pagzi.online?ref=badge&from=${encodeURIComponent(profile.username)}`}
+          target="_blank"
+          rel="noopener"
+          className="btn h-auto gap-2.5 rounded-xl border-0 bg-[#17172e] py-2.5 pl-3 pr-4 font-sans text-[15px] font-medium normal-case text-[#b9b4f5] shadow-none hover:bg-[#1f1f3d]"
+        >
+          <img src="/pagzi-logo.png" alt="" className="h-[34px] w-[22px] object-contain" />
+          Built w/ Pagzi
+        </a>
+      </div>
     </div>
   );
 }
