@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/year-pass-expiry",
+      "schedule": "30 3 * * *"
+    }
+  ]
+}
