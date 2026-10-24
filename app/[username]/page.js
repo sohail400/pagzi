@@ -6,7 +6,7 @@ import ShareButton from "@/components/ShareButton";
 import SocialLinks from "@/components/SocialLinks";
 import { hasFullAccess } from "@/lib/access";
 import { isPublished, PROFILE_COLUMNS, socialLinksOf, USERNAME_PATTERN } from "@/lib/profile";
-import { fontOf, inkFor, STYLE_DEFAULTS } from "@/lib/style";
+import { fontOf, inkFor, isDarkHex, STYLE_DEFAULTS } from "@/lib/style";
 import { getSitesWithTraffic, syncTrafficForVisit } from "@/lib/traffic";
 import { createPublicClient } from "@/lib/supabase/public";
 
@@ -69,6 +69,9 @@ export default async function ProfilePage({ params }) {
   const links = socialLinksOf(profile);
   const pageColor = profile.page_color || STYLE_DEFAULTS.page;
   const textColor = inkFor(pageColor, profile.text_color);
+  const lightPage = !isDarkHex(pageColor);
+  const nameColor = lightPage ? "text-black" : "";
+  const mutedColor = lightPage ? "text-stone-500" : "text-stone-400";
   const shareColor = profile.share_color || STYLE_DEFAULTS.share;
   const shareUrl = profile.custom_domain
     ? `https://${profile.custom_domain}`
@@ -93,14 +96,15 @@ export default async function ProfilePage({ params }) {
               />
             </div>
             <div className="flex min-w-0 flex-1 items-start justify-between gap-3 lg:hidden">
-              <div className="min-w-0 pt-0.5">
-                <p className="truncate text-xl font-bold leading-none tracking-tight">
+              <div className="min-w-0 pt-1">
+                <p className={`truncate text-xl font-bold leading-tight tracking-tight ${nameColor}`}>
                   {profile.name || `@${profile.username}`}
                 </p>
                 {profile.location && (
-                  <p className="mt-1.5 flex items-center gap-1 text-[13px] leading-none opacity-70">
-                    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5 shrink-0 fill-current">
-                      <path d="M12 2a8 8 0 0 0-8 8c0 5 8 12 8 12s8-7 8-12a8 8 0 0 0-8-8Zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z" />
+                  <p className={`mt-3 flex items-center gap-1.5 text-[13px] leading-none ${mutedColor}`}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z" />
+                      <circle cx="12" cy="10" r="2.2" />
                     </svg>
                     <span className="truncate">{profile.location}</span>
                   </p>
@@ -110,19 +114,20 @@ export default async function ProfilePage({ params }) {
             </div>
           </div>
           <div className="flex w-full flex-col items-start gap-4">
-            <p className="hidden text-3xl font-bold leading-none tracking-tight lg:block lg:text-4xl">
+            <p className={`hidden text-3xl font-bold leading-none tracking-tight lg:block lg:text-4xl ${nameColor}`}>
               {profile.name || `@${profile.username}`}
             </p>
             {profile.location && (
-              <p className="hidden items-center gap-1.5 text-sm opacity-70 lg:flex">
-                <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 shrink-0 fill-current">
-                  <path d="M12 2a8 8 0 0 0-8 8c0 5 8 12 8 12s8-7 8-12a8 8 0 0 0-8-8Zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z" />
+              <p className={`hidden items-center gap-1.5 text-sm lg:flex ${mutedColor}`}>
+                <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z" />
+                  <circle cx="12" cy="10" r="2.2" />
                 </svg>
                 {profile.location}
               </p>
             )}
             {profile.bio && (
-              <p className="max-w-lg whitespace-pre-line break-words text-[15px] font-medium leading-6 opacity-90 sm:text-base">
+              <p className={`max-w-lg whitespace-pre-line break-words text-[15px] font-normal leading-6 sm:text-base ${mutedColor}`}>
                 {profile.bio}
               </p>
             )}
