@@ -106,7 +106,7 @@ export default function LandingPreview({ profile, sites, sampleCharts = false, f
         <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">
           {look.name} · {chart.label}
         </p>
-        <div className="landing-phone mx-auto w-full max-w-[20.5rem]">
+        <div className="landing-phone mx-auto w-full max-w-[22rem]">
           <PagePhone
             profile={profile}
             page={look.page}

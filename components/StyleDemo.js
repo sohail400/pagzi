@@ -80,7 +80,7 @@ const StyleStage = memo(function StyleStage({ profile, site, initial, sample }) 
         </div>
         <FontPicker font={font} onChange={setFont} />
       </div>
-      <div className="landing-phone order-1 mx-auto w-full max-w-[16.5rem] md:order-2 md:max-w-[17.5rem]">
+      <div className="landing-phone order-1 mx-auto w-full max-w-[22rem] md:order-2">
         <PagePhone
           profile={profile}
           page={page}

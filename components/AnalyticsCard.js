@@ -193,10 +193,12 @@ export default function AnalyticsCard({
   cardColor = "#ffffff",
   compact = false,
   mobileCompact = false,
+  phone = false,
   demo = false,
   bordered = true,
   verified = false,
 }) {
+  const tight = compact || mobileCompact || phone;
   const [range, setRange] = useState(28);
   const [hiddenSeries, setHiddenSeries] = useState([]);
   const [tooltip, setTooltip] = useState(null);
@@ -362,11 +364,11 @@ export default function AnalyticsCard({
             grid: { display: false },
             border: { display: false },
             ticks: {
-              ...tickStyle(compact || mobileCompact ? 8 : 9),
+              ...tickStyle(tight ? 8 : 9),
               maxRotation: 0,
               autoSkip: true,
-              maxTicksLimit: compact || mobileCompact ? 3 : 6,
-              autoSkipPadding: compact || mobileCompact ? 10 : 28,
+              maxTicksLimit: tight ? 3 : 6,
+              autoSkipPadding: tight ? 10 : 28,
             },
           },
           clicks: {
@@ -414,7 +416,7 @@ export default function AnalyticsCard({
     chart.$ink = ink;
     chartRef.current = chart;
     return () => chart.destroy();
-  }, [chartType, darkCard, compact, mobileCompact]);
+  }, [chartType, darkCard, tight]);
 
   useEffect(() => {
     const chart = chartRef.current;
@@ -422,9 +424,9 @@ export default function AnalyticsCard({
     const shown = days.slice(-range);
     chart.$dates = shown.map((day) => day.date);
     const narrow = chart.width > 0 && chart.width < 520;
-    const format = compact || mobileCompact || narrow ? shortLabel : dateLabel;
+    const format = tight || narrow ? shortLabel : dateLabel;
     chart.data.labels = shown.map((day) => format.format(new Date(`${day.date}T00:00:00Z`)));
-    chart.options.scales.x.ticks.maxTicksLimit = compact || mobileCompact || narrow ? 3 : 6;
+    chart.options.scales.x.ticks.maxTicksLimit = tight || narrow ? 3 : 6;
     paletteOf(clicksColor, impressionsColor).forEach((item, index) => {
       const dataset = chart.data.datasets[index];
       Object.assign(dataset, datasetStyle(item, chartType), {
@@ -433,7 +435,7 @@ export default function AnalyticsCard({
       });
     });
     chart.update();
-  }, [days, range, chartType, clicksColor, impressionsColor, compact, mobileCompact]);
+  }, [days, range, chartType, clicksColor, impressionsColor, tight]);
 
   useEffect(() => {
     const chart = chartRef.current;
@@ -467,6 +469,8 @@ export default function AnalyticsCard({
       className={`card min-w-0 shadow-[0_8px_28px_rgba(28,25,23,0.09)] ${bordered ? "border border-stone-200" : "border-0"} ${demo ? "pointer-events-none relative" : ""} ${
         compact
           ? "rounded-2xl px-3 pb-2.5 pt-3"
+          : phone
+            ? "rounded-3xl px-4 pb-3.5 pt-4"
           : mobileCompact
             ? "rounded-3xl px-4 pb-3.5 pt-4 lg:rounded-[1.4rem] lg:px-4 lg:pb-3 lg:pt-4"
             : "rounded-[1.4rem] px-4 pb-3 pt-4"
@@ -479,17 +483,17 @@ export default function AnalyticsCard({
         transition: demo ? "transform 680ms cubic-bezier(0.22, 1, 0.36, 1)" : undefined,
       }}
     >
-      <div className={`min-w-0 ${compact ? "flex flex-wrap items-start gap-2" : anonymous ? "flex flex-wrap items-start justify-end gap-3" : mobileCompact ? "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-1.5 gap-y-0 lg:flex lg:flex-wrap lg:items-start lg:gap-3" : "flex flex-wrap items-start gap-3"}`}>
+      <div className={`min-w-0 ${compact ? "flex flex-wrap items-start gap-2" : anonymous ? "flex flex-wrap items-start justify-end gap-3" : phone ? "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-1.5 gap-y-0" : mobileCompact ? "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-1.5 gap-y-0 lg:flex lg:flex-wrap lg:items-start lg:gap-3" : "flex flex-wrap items-start gap-3"}`}>
         {!anonymous && (
           <>
             <SiteLogo
               name={name}
               logoUrl={logoUrl}
-              className={`${compact ? "h-7 w-7" : mobileCompact ? "col-start-1 row-start-1 h-7 w-7 lg:h-8 lg:w-8" : "h-8 w-8"} shrink-0 rounded-lg`}
+              className={`${compact ? "h-7 w-7" : phone ? "col-start-1 row-start-1 h-7 w-7" : mobileCompact ? "col-start-1 row-start-1 h-7 w-7 lg:h-8 lg:w-8" : "h-8 w-8"} shrink-0 rounded-lg`}
             />
-            <div className={compact ? "min-w-0 flex-1 space-y-0.5" : mobileCompact ? "contents lg:block lg:min-w-0 lg:flex-1 lg:space-y-1.5" : "min-w-0 flex-1 space-y-1.5"}>
+            <div className={compact ? "min-w-0 flex-1 space-y-0.5" : phone ? "contents" : mobileCompact ? "contents lg:block lg:min-w-0 lg:flex-1 lg:space-y-1.5" : "min-w-0 flex-1 space-y-1.5"}>
               {verified ? (
-                <VerifiedTooltip className={compact ? "block" : mobileCompact ? "col-start-2 row-start-1 min-w-0 lg:block" : "block"}>
+                <VerifiedTooltip className={compact ? "block" : phone ? "col-start-2 row-start-1 min-w-0" : mobileCompact ? "col-start-2 row-start-1 min-w-0 lg:block" : "block"}>
                   {siteUrl ? (
                     <a
                       href={siteUrl}
@@ -508,20 +512,20 @@ export default function AnalyticsCard({
                   href={siteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`truncate font-semibold leading-none underline-offset-2 hover:underline ${compact ? "block text-[13px]" : mobileCompact ? "col-start-2 row-start-1 min-w-0 text-sm lg:block" : "block text-sm"} ${darkCard ? "text-white" : "text-stone-800"}`}
+                  className={`truncate font-semibold leading-none underline-offset-2 hover:underline ${compact ? "block text-[13px]" : phone ? "col-start-2 row-start-1 min-w-0 block text-sm" : mobileCompact ? "col-start-2 row-start-1 min-w-0 text-sm lg:block" : "block text-sm"} ${darkCard ? "text-white" : "text-stone-800"}`}
                 >
                   {name}
                 </a>
               ) : (
-                <p className={`truncate font-semibold leading-none ${compact ? "block text-[13px]" : mobileCompact ? "col-start-2 row-start-1 min-w-0 text-sm lg:block" : "block text-sm"} ${darkCard ? "text-white" : "text-stone-800"}`}>{name}</p>
+                <p className={`truncate font-semibold leading-none ${compact ? "block text-[13px]" : phone ? "col-start-2 row-start-1 min-w-0 block text-sm" : mobileCompact ? "col-start-2 row-start-1 min-w-0 text-sm lg:block" : "block text-sm"} ${darkCard ? "text-white" : "text-stone-800"}`}>{name}</p>
               )}
               {description && (
-                <p className={`min-w-0 truncate leading-snug ${mobileCompact ? "col-span-2 col-start-2 row-start-2 text-xs max-lg:-mt-0.5 max-lg:leading-none lg:text-[11px]" : "text-[11px]"} ${darkCard ? "text-stone-300" : "text-stone-500"}`}>
+                <p className={`min-w-0 truncate leading-snug ${phone ? "col-span-2 col-start-2 row-start-2 text-xs leading-none" : mobileCompact ? "col-span-2 col-start-2 row-start-2 text-xs max-lg:-mt-0.5 max-lg:leading-none lg:text-[11px]" : "text-[11px]"} ${darkCard ? "text-stone-300" : "text-stone-500"}`}>
                   {description}
                 </p>
               )}
               {!compact && (category || status) && (
-                <p className={`truncate text-[11px] leading-snug ${mobileCompact ? "hidden lg:block" : ""} ${darkCard ? "text-stone-300" : "text-stone-400"}`}>
+                <p className={`truncate text-[11px] leading-snug ${phone ? "hidden" : mobileCompact ? "hidden lg:block" : ""} ${darkCard ? "text-stone-300" : "text-stone-400"}`}>
                   {[category, status].filter(Boolean).join(" · ")}
                 </p>
               )}
@@ -530,7 +534,7 @@ export default function AnalyticsCard({
         )}
         {!compact && (
           <div
-            className={`join shrink-0 rounded-full border-0 ${mobileCompact ? "col-start-3 row-start-1 p-px lg:p-0.5" : "p-0.5"} ${darkCard ? "bg-[#161616]" : "bg-white"}`}
+            className={`join shrink-0 rounded-full border-0 ${phone ? "col-start-3 row-start-1 p-px" : mobileCompact ? "col-start-3 row-start-1 p-px lg:p-0.5" : "p-0.5"} ${darkCard ? "bg-[#161616]" : "bg-white"}`}
             role="group"
             aria-label="Date range"
           >
@@ -545,7 +549,7 @@ export default function AnalyticsCard({
                 }}
                 aria-pressed={range === item.days}
                 className={`btn join-item btn-xs rounded-full border-0 font-semibold shadow-none ${
-                  mobileCompact ? "h-5 min-h-5 px-1.5 text-[9px] lg:h-6 lg:min-h-6 lg:px-2.5 lg:text-[10px]" : "h-6 min-h-6 px-2.5 text-[10px]"
+                  phone ? "h-5 min-h-5 px-1.5 text-[9px]" : mobileCompact ? "h-5 min-h-5 px-1.5 text-[9px] lg:h-6 lg:min-h-6 lg:px-2.5 lg:text-[10px]" : "h-6 min-h-6 px-2.5 text-[10px]"
                 } ${
                   range === item.days
                     ? darkCard
@@ -563,14 +567,14 @@ export default function AnalyticsCard({
         )}
       </div>
 
-      <div className={compact ? "mt-2 h-20" : mobileCompact ? "mt-3 h-28 lg:mt-3 lg:h-32" : "mt-3 h-32"}>
+      <div className={compact ? "mt-2 h-20" : phone ? "mt-3 h-28" : mobileCompact ? "mt-3 h-28 lg:mt-3 lg:h-32" : "mt-3 h-32"}>
         <div className="relative h-full w-full">
           <canvas ref={canvasRef} aria-label="Clicks and impressions over time" role="img" />
           {tooltip && <ChartTooltip tooltip={tooltip} />}
         </div>
       </div>
 
-      <div className={`mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 ${compact ? "text-xs" : mobileCompact ? "text-xs lg:text-sm" : "text-sm"} ${darkCard ? "text-white" : "text-stone-900"}`}>
+      <div className={`mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 ${compact ? "text-xs" : phone || mobileCompact ? "text-xs" : "text-sm"} ${phone ? "" : mobileCompact ? "lg:text-sm" : ""} ${darkCard ? "text-white" : "text-stone-900"}`}>
         {palette.map((stat, index) => (
           <span key={stat.key} className="inline-flex items-center gap-2">
             {index > 0 && <span className={darkCard ? "text-stone-500" : "text-stone-300"}>·</span>}
