@@ -9,7 +9,7 @@ export default async function Layout({ children }) {
 
   return (
     <DashboardLayout
-      user={{ name: profile?.name ?? "", email }}
+      user={{ name: profile?.name ?? "", email, avatarUrl: profile?.avatar_url ?? "" }}
       locked={!paid}
       showPublish={!published && paid}
       showView={published && Boolean(profile?.username)}

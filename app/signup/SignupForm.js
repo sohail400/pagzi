@@ -4,6 +4,7 @@ import Link from "next/link";
 import BrandMark from "@/components/BrandMark";
 import { useActionState } from "react";
 import { useSearchParams } from "next/navigation";
+import GoogleButton from "@/components/GoogleButton";
 import PasswordField from "@/components/PasswordField";
 import { signup } from "@/app/auth/actions";
 import { isPlanId } from "@/lib/plans";
@@ -65,6 +66,8 @@ export default function SignupForm() {
                   </p>
                 </div>
               ) : (
+              <>
+              <GoogleButton plan={plan} />
               <form className="space-y-5" action={formAction}>
                 {plan && <input type="hidden" name="plan" value={plan} />}
                 {state?.error && (
@@ -130,6 +133,7 @@ export default function SignupForm() {
                   {pending ? "Creating account…" : "Create account"}
                 </button>
               </form>
+              </>
               )}
 
               <p className="mt-6 text-center text-sm text-stone-500">

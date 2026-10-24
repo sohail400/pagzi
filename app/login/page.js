@@ -1,5 +1,6 @@
 import Link from "next/link";
 import BrandMark from "@/components/BrandMark";
+import GoogleButton from "@/components/GoogleButton";
 import { isPlanId } from "@/lib/plans";
 import LoginForm from "./LoginForm";
 
@@ -7,6 +8,7 @@ const NOTICES = {
   invalid_link: "That link is invalid or has expired. Please sign in, or sign up again to get a new link.",
   confirm_failed:
     "Your email is confirmed, but we couldn't sign you in automatically (this happens if the link was opened in a different browser). Please sign in below.",
+  google_failed: "We couldn't sign you in with Google. Please try again, or use your email and password.",
 };
 
 export const metadata = {
@@ -53,6 +55,7 @@ export default async function LoginPage({ searchParams }) {
 
           <div className="card rounded-[2rem] border border-white/10 bg-[#1F1F1F]">
             <div className="card-body gap-0 p-6 sm:p-8">
+              <GoogleButton plan={selectedPlan} />
               <LoginForm notice={NOTICES[error]} plan={selectedPlan} />
 
               <p className="mt-6 text-center text-sm text-stone-500">

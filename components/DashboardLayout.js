@@ -4,7 +4,7 @@ import Link from "next/link";
 import BrandMark from "@/components/BrandMark";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/auth/actions";
-import { initials } from "@/lib/profile";
+import Avatar from "@/components/Avatar";
 
 export default function DashboardLayout({ user, locked = false, showPublish = false, showView = false, publicPath = "", children }) {
   const pathname = usePathname();
@@ -57,11 +57,7 @@ export default function DashboardLayout({ user, locked = false, showPublish = fa
 
           <div className="mt-auto border-t border-white/10 pt-4">
             <div className="mb-4 flex items-center gap-3 px-2">
-              <div className="avatar placeholder">
-                <div className="w-9 rounded-full bg-amber-100 text-sm font-bold text-stone-700">
-                  <span>{initials(user.name, user.email)}</span>
-                </div>
-              </div>
+              <Avatar src={user.avatarUrl} name={user.name || user.email} className="w-9 shrink-0" textClassName="text-sm" />
               <div className="min-w-0">
                 {user.name && <p className="truncate text-sm font-semibold text-white">{user.name}</p>}
                 <p className="truncate text-xs text-stone-400">{user.email}</p>

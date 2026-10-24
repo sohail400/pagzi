@@ -68,6 +68,22 @@ export async function login(previousState, formData) {
   redirect(billingPath(formData.get("plan")));
 }
 
+export async function signInWithGoogle(formData) {
+  const origin = await authOrigin();
+  await rememberPlan(formData.get("plan"));
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: `${origin}/auth/callback` },
+  });
+
+  if (error || !data?.url) {
+    console.error("Starting Google sign-in failed:", error);
+    redirect("/login?error=google_failed");
+  }
+  redirect(data.url);
+}
+
 export async function requestPasswordReset(previousState, formData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   if (!EMAIL_PATTERN.test(email)) return { error: "Please enter a valid email address.", values: { email } };
