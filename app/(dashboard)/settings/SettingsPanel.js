@@ -6,7 +6,7 @@ import { openBillingPortal } from "@/app/billing/actions";
 import LiveUpdateDialog from "@/components/LiveUpdateDialog";
 import PayButton from "@/components/PayButton";
 import { APP_DOMAIN, dnsName } from "@/lib/custom-domain";
-import { PLAN_OPTIONS } from "@/lib/plans";
+import { LAUNCH_DEAL_SPOTS, PLAN_OPTIONS, formatPrice } from "@/lib/plans";
 import { deleteAccount, updateCustomDomain, updateUsername } from "./actions";
 
 const CARD = "rounded-2xl bg-[#2A2A2A] px-6 py-6";
@@ -64,7 +64,9 @@ function Billing({
           )}
           {PLAN_OPTIONS.map((option) => {
             const soldOut = option.id === "early" && earlySoldOut;
+            const closed = option.id === "lifetime" && !earlySoldOut;
             const selected = selectedPlan === option.id;
+            const detail = closed ? "Opens after the launch spots sell out." : option.detail;
             return (
               <div
                 key={option.id}
@@ -73,27 +75,27 @@ function Billing({
                 <div className="flex items-end justify-between gap-4">
                   <div>
                     <p className="text-sm font-medium text-stone-200">{option.name}</p>
-                    <p className="mt-1 text-sm text-stone-400">{option.detail}</p>
+                    <p className="mt-1 text-sm text-stone-400">{detail}</p>
                     {option.id === "early" && (
                       <p className="mt-1 text-sm text-stone-400">
-                        {soldOut ? "Sold out" : `${earlyLeft} of 20 spots left`}
+                        {soldOut ? "Sold out" : `${earlyLeft} of ${LAUNCH_DEAL_SPOTS} spots left`}
                       </p>
                     )}
                   </div>
-                  <p className="text-3xl font-bold tracking-tight text-white">${option.price}</p>
+                  <p className="text-3xl font-bold tracking-tight text-white">${formatPrice(option.price)}</p>
                 </div>
-                {soldOut ? (
+                {soldOut || closed ? (
                   <button
                     type="button"
                     disabled
                     className="btn btn-save mt-4 h-11 w-full cursor-not-allowed rounded-xl border-0 text-sm font-semibold text-white shadow-none"
                   >
-                    Sold out
+                    {soldOut ? "Sold out" : "Not open yet"}
                   </button>
                 ) : (
                   <PayButton
                     plan={option.id}
-                    label={`Pay $${option.price}`}
+                    label={`Pay $${formatPrice(option.price)}`}
                     className="btn btn-save mt-4 h-11 w-full rounded-xl border-0 text-sm font-semibold text-white shadow-none"
                   />
                 )}

@@ -1,6 +1,6 @@
 import { loadOwner } from "@/lib/auth";
 import { hasFullAccess, isBuilderAccount } from "@/lib/access";
-import { planOption } from "@/lib/plans";
+import { LAUNCH_DEAL_SPOTS, planOption } from "@/lib/plans";
 import { earlySpotCount } from "@/lib/payments";
 import SettingsPanel from "./SettingsPanel";
 
@@ -41,7 +41,7 @@ export default async function SettingsPage({ searchParams }) {
     hasReceipts = false;
   }
 
-  let earlyLeft = 20;
+  let earlyLeft = LAUNCH_DEAL_SPOTS;
   let earlySoldOut = false;
   if (!paid) {
     try {

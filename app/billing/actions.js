@@ -10,7 +10,7 @@ import { dodoEnvironment, earlySpotCount, isBuilderAccount, productIdFor } from 
 export async function startCheckout(previousState, formData) {
   const plan = String(formData?.get("plan") ?? "");
   const option = planOption(plan);
-  if (!isPlanId(plan) || !option) return { error: "Choose Early, the 1-Year Pass, or the Lifetime Deal." };
+  if (!isPlanId(plan) || !option) return { error: "Choose the Launch deal, the 1-Year Pass, or the Lifetime Deal." };
 
   const { supabase, userId, email } = await requireUser();
   const { apiKey, base } = dodoEnvironment();
@@ -28,15 +28,18 @@ export async function startCheckout(previousState, formData) {
   if (isBuilderAccount(profile.data?.username)) redirect("/settings?checkout=builder");
   if (hasFullAccess(profile.data)) redirect("/settings?checkout=paid");
 
-  if (plan === "early") {
+  if (plan === "early" || plan === "lifetime") {
     let spots;
     try {
       spots = await earlySpotCount();
     } catch (error) {
-      console.error("Counting Early spots failed:", error);
+      console.error("Counting launch spots failed:", error);
       return { error: "Billing is not ready yet. Run the payments database update, then try again." };
     }
-    if (spots.soldOut) return { error: "The Early price is sold out." };
+    if (plan === "early" && spots.soldOut) return { error: "The launch deal is sold out." };
+    if (plan === "lifetime" && !spots.soldOut) {
+      return { error: "The lifetime price opens after the launch spots are sold out." };
+    }
   }
 
   const headerStore = await headers();

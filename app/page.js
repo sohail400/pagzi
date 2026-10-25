@@ -8,7 +8,8 @@ import ProductDemo from "@/components/ProductDemo";
 import ShowcaseWall from "@/components/ShowcaseWall";
 import SiteFooter from "@/components/SiteFooter";
 import StyleDemo from "@/components/StyleDemo";
-import { EARLY_SPOT_LIMIT, earlySpotCount } from "@/lib/payments";
+import { LAUNCH_DEAL_SPOTS } from "@/lib/plans";
+import { earlySpotCount } from "@/lib/payments";
 import { PROFILE_COLUMNS, socialLinksOf } from "@/lib/profile";
 import { inkFor, STYLE_DEFAULTS } from "@/lib/style";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -119,7 +120,7 @@ async function loadEarlySpots() {
     return await earlySpotCount();
   } catch (error) {
     console.error("Early spot count failed:", error?.code, error?.message, error?.details, error?.hint);
-    return { left: EARLY_SPOT_LIMIT, soldOut: false };
+    return { left: LAUNCH_DEAL_SPOTS, soldOut: false };
   }
 }
 
@@ -296,7 +297,7 @@ export default async function LandingPage() {
             <p className="mx-auto mt-4 max-w-lg text-center text-base leading-7 text-stone-300">
               No subscription.
             </p>
-            <PricingCard earlyLeft={early.left} earlyLimit={EARLY_SPOT_LIMIT} soldOut={early.soldOut} />
+            <PricingCard earlyLeft={early.left} earlyLimit={LAUNCH_DEAL_SPOTS} soldOut={early.soldOut} />
           </div>
         </section>
       </main>

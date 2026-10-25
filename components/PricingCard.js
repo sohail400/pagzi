@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { PLAN_OPTIONS } from "@/lib/plans";
+import { PLAN_OPTIONS, formatPrice } from "@/lib/plans";
 
 const FEATURES = [
   "Build trust with verified Google Search Console data",
@@ -37,15 +37,18 @@ function Check() {
 export default function PricingCard({ earlyLeft, earlyLimit, soldOut }) {
   const [planId, setPlanId] = useState("year");
   const chosen = PLAN_OPTIONS.find((plan) => plan.id === planId) || PLAN_OPTIONS[1];
-  const blocked = chosen.id === "early" && soldOut;
+  const blocked = (chosen.id === "early" && soldOut) || (chosen.id === "lifetime" && !soldOut);
+  const spotsLeft = Math.max(0, Math.min(earlyLeft, earlyLimit || 0));
+  const spotsShare = earlyLimit > 0 ? (spotsLeft / earlyLimit) * 100 : 0;
 
   return (
     <div className="mx-auto mt-12 max-w-xl rounded-xl border border-white/10 bg-black p-3 text-white sm:p-4">
       <div className="space-y-3">
         {PLAN_OPTIONS.map((plan) => {
           const selected = plan.id === planId;
-          const disabled = plan.id === "early" && soldOut;
+          const disabled = (plan.id === "early" && soldOut) || (plan.id === "lifetime" && !soldOut);
           const badge = BADGES[plan.id];
+          const detail = plan.id === "lifetime" && !soldOut ? "Opens after the launch spots sell out." : plan.detail;
           return (
             <button
               key={plan.id}
@@ -79,14 +82,21 @@ export default function PricingCard({ earlyLeft, earlyLimit, soldOut }) {
                     </span>
                   )}
                 </span>
-                <span className="mt-1 block text-sm leading-5 text-white">{plan.detail}</span>
+                <span className="mt-1 block text-sm leading-5 text-white">{detail}</span>
+              </span>
+              <span className="flex shrink-0 flex-col items-end">
+                <span className="text-3xl font-semibold tracking-tight text-white">${formatPrice(plan.price)}</span>
                 {plan.id === "early" && (
-                  <span className="mt-1 block text-sm leading-5 text-stone-400">
-                    {soldOut ? "Sold out" : `${earlyLeft} of ${earlyLimit} spots left`}
+                  <span className="mt-2 w-16">
+                    <span className="block h-1 overflow-hidden rounded-full bg-white/15" aria-hidden="true">
+                      <span className="block h-full rounded-full bg-[#ff4fa3]" style={{ width: `${spotsShare}%` }} />
+                    </span>
+                    <span className="mt-1 block text-right text-[10px] leading-none text-stone-400">
+                      {soldOut ? "Sold out" : `${spotsLeft} of ${earlyLimit} left`}
+                    </span>
                   </span>
                 )}
               </span>
-              <span className="shrink-0 text-3xl font-semibold tracking-tight text-white">${plan.price}</span>
             </button>
           );
         })}
